@@ -4,7 +4,7 @@ import argparse
 import json
 import sys
 
-from . import config, ledger, parse, store
+from . import config, ledger, parse, reconcile, store
 
 
 def cmd_parse(_args: argparse.Namespace) -> int:
@@ -53,6 +53,18 @@ def cmd_ledger(args: argparse.Namespace) -> int:
     return 0 if not result["errors"] else 1
 
 
+def cmd_reconcile(args: argparse.Namespace) -> int:
+    teams = [team.strip() for team in args.teams.split(",") if team.strip()] or None
+    scopes = [scope.strip() for scope in args.scopes.split(",") if scope.strip()] or None
+    result = reconcile.run(
+        teams=teams,
+        scopes=scopes,
+        limit=args.limit,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if not result["errors"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="catalyst")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -76,6 +88,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_ledger.add_argument("--reset", action="store_true")
     p_ledger.add_argument("--window-tokens", type=int, default=2500)
     p_ledger.set_defaults(func=cmd_ledger)
+
+    p_reconcile = sub.add_parser("reconcile", help="reconcile topics and edges")
+    p_reconcile.add_argument("--teams", default="")
+    p_reconcile.add_argument("--scopes", default="")
+    p_reconcile.add_argument("--limit", type=int)
+    p_reconcile.set_defaults(func=cmd_reconcile)
 
     return parser
 
