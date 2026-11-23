@@ -265,43 +265,151 @@ def store_from_jsonl(conn: sqlite3.Connection, reset: bool = True) -> dict:
     return {"meetings": n_meetings, "turns": n_turns, "fts_rows": n_fts}
 
 
+_STOPWORDS = frozenset(
+    {
+        "a", "an", "and", "are", "as", "at", "be", "by", "did", "do", "does",
+        "for", "from", "had", "has", "have", "how", "in", "is", "it", "its",
+        "of", "on", "or", "that", "the", "their", "them", "they", "this",
+        "to", "was", "were", "what", "when", "where", "which", "who", "why",
+        "will", "with",
+    }
+)
+
+
 def _tokens(query: str) -> list[str]:
+    return re.findall(r"[A-Za-z0-9'_]+", query)
+
+
+def _fts_tokens(query: str) -> list[str]:
     return re.findall(r"[A-Za-z0-9']+", query)
 
 
 def sanitize_fts_query(query: str) -> str | None:
-    tokens = _tokens(query)
+    tokens = _fts_tokens(query)
     if not tokens:
         return None
     return " ".join(f'"{token}"' for token in tokens)
 
 
+def sanitize_fts_or_query(query: str) -> str | None:
+    raw_tokens = _tokens(query)
+    if not raw_tokens:
+        return None
+    filtered = [t for t in raw_tokens if t.lower() not in _STOPWORDS and len(t) > 1]
+    tokens = filtered or raw_tokens
+    terms: list[str] = []
+    seen: set[str] = set()
+    for token in tokens:
+        clean = token.replace('"', "")
+        if not clean:
+            continue
+        key = clean.lower()
+        if key not in seen:
+            seen.add(key)
+            terms.append(f'"{clean}"')
+        # AMI transcripts spell acronyms like LCD -> L_C_D_, TV -> T_V_, RSI -> R_S_I_
+        if 2 <= len(clean) <= 4 and clean.isalpha() and clean.isupper():
+            ami_acro = "_".join(clean) + "_"
+            if ami_acro.lower() not in seen:
+                seen.add(ami_acro.lower())
+                terms.append(f'"{ami_acro}"')
+    if not terms:
+        return None
+    return " OR ".join(terms)
+
+
 def sanitize_phrase(query: str) -> str | None:
-    tokens = _tokens(query)
+    tokens = _fts_tokens(query)
     if not tokens:
         return None
     return '"' + " ".join(tokens) + '"'
+
+
+def _run_fts(
+    conn: sqlite3.Connection,
+    match: str,
+    *,
+    team: str | None = None,
+    as_of: str | None = None,
+    meeting_letter: str | None = None,
+    limit: int = 20,
+) -> list[dict]:
+    sql = (
+        "SELECT turns_fts.turn_id, turns_fts.meeting_id, turns_fts.team, turns_fts.rank "
+        "FROM turns_fts "
+        "JOIN turns ON turns.turn_id = turns_fts.turn_id "
+        "WHERE turns_fts MATCH ?"
+    )
+    params: list = [match]
+    if team:
+        sql += " AND turns_fts.team = ?"
+        params.append(team)
+    if as_of:
+        sql += " AND turns.letter <= ?"
+        params.append(as_of)
+    if meeting_letter:
+        sql += " AND turns.letter = ?"
+        params.append(meeting_letter)
+    sql += " ORDER BY turns_fts.rank LIMIT ?"
+    params.append(limit)
+    return [dict(row) for row in conn.execute(sql, params)]
 
 
 def fts_search(
     conn: sqlite3.Connection,
     query: str,
     team: str | None = None,
+    as_of: str | None = None,
+    meeting_letter: str | None = None,
     limit: int = 20,
     phrase: bool = False,
 ) -> list[dict]:
-    match = sanitize_phrase(query) if phrase else sanitize_fts_query(query)
-    if not match:
-        return []
+    if phrase:
+        match = sanitize_phrase(query)
+        if not match:
+            return []
+        return _run_fts(
+            conn,
+            match,
+            team=team,
+            as_of=as_of,
+            meeting_letter=meeting_letter,
+            limit=limit,
+        )
 
-    sql = "SELECT turn_id, meeting_id, team, rank FROM turns_fts WHERE turns_fts MATCH ?"
-    params: list = [match]
-    if team:
-        sql += " AND team = ?"
-        params.append(team)
-    sql += " ORDER BY rank LIMIT ?"
-    params.append(limit)
-    return [dict(row) for row in conn.execute(sql, params)]
+    strict_match = sanitize_fts_query(query)
+    if not strict_match:
+        return []
+    rows = _run_fts(
+        conn,
+        strict_match,
+        team=team,
+        as_of=as_of,
+        meeting_letter=meeting_letter,
+        limit=limit,
+    )
+    if len(rows) >= limit:
+        return rows
+
+    or_match = sanitize_fts_or_query(query)
+    if not or_match or or_match == strict_match:
+        return rows
+    seen = {row["turn_id"] for row in rows}
+    extra = _run_fts(
+        conn,
+        or_match,
+        team=team,
+        as_of=as_of,
+        meeting_letter=meeting_letter,
+        limit=limit,
+    )
+    for row in extra:
+        if row["turn_id"] not in seen:
+            seen.add(row["turn_id"])
+            rows.append(row)
+            if len(rows) >= limit:
+                break
+    return rows
 
 
 def known_phrase_check(conn: sqlite3.Connection, turn: dict) -> dict:

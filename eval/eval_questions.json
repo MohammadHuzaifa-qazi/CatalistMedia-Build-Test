@@ -1,0 +1,239 @@
+{
+  "description": "12 genuinely custom multi-meeting evaluation questions authored by manually inspecting raw AMI transcripts across 12 teams unused by the original 25 questions. Every expected_answer, gold_turn_ids list, and required_facts list was verified directly against the raw transcripts without using any agent output as ground truth.",
+  "authoring_protocol": "Manual raw-transcript inspection across >=2 meetings per team (12 unseen teams: ES2005, ES2012, ES2013, ES2015, IS1000, IS1001, IS1004, IS1005, IS1006, TS3005, TS3008, TS3012). Distinct from all 25 questions in questions.json.",
+  "questions": [
+    {
+      "question_id": "C01",
+      "team": "ES2005",
+      "category": "NUM+CD",
+      "question": "Team ES2005's first production costing in meeting d came out over their 12.50 Euro limit. What initial cost did Speaker C report, why was it inflated, and what final cost did they reach once that error was corrected?",
+      "expected_answer": "Against their 12.50 Euro production target (ES2005a), Speaker C initially reported a cost of 14.6 Euros in meeting d because double-curved casing had been mistakenly entered as quantity two instead of one; fixing it to one removed 3 Euros and brought the total down to 11.60 Euros.",
+      "gold_turn_ids": [
+        "ES2005a#00033",
+        "ES2005d#00071",
+        "ES2005d#00083",
+        "ES2005d#00105",
+        "ES2005d#00112"
+      ],
+      "required_facts": [
+        "14.6|fourteen point six|14.60",
+        "double|two",
+        "11.6|11.60|eleven euros sixty|eleven point six"
+      ]
+    },
+    {
+      "question_id": "C02",
+      "team": "ES2012",
+      "category": "SPK+CD",
+      "question": "In Team ES2012, who proposed putting the batteries inside interchangeable covers, why did Speaker A object to that idea, and what final interface and production cost did Speaker A report in meeting d?",
+      "expected_answer": "Speaker C (User Interface Designer) proposed putting the batteries inside the cover in meeting c, and Speaker A objected that adding a connector would introduce unreliability compared to soldering the unit together. In meeting d, Speaker A reported a design using push buttons and a simple slider (no scroll wheel) at 12.50 Euros.",
+      "gold_turn_ids": [
+        "ES2012c#00159",
+        "ES2012c#00164",
+        "ES2012d#00057"
+      ],
+      "required_facts": [
+        "speaker c",
+        "unreliab|reliab|connection",
+        "push button|push-button|slider",
+        "12.5|twelve point five|12.50|twelve and a half"
+      ]
+    },
+    {
+      "question_id": "C03",
+      "team": "ES2013",
+      "category": "CD+NUM",
+      "question": "Why did Team ES2013 eliminate titanium for the remote's case in meeting c, what two case materials did they combine in the final costed design, and what total production cost did Speaker A calculate?",
+      "expected_answer": "Speaker A explained in meeting c that titanium was eliminated because it was too expensive and could not support double curves. In meeting d, they combined plastic and rubber for the case and Speaker A calculated a total cost of 9.20 (nine Pounds twenty), well below the 12.50 limit.",
+      "gold_turn_ids": [
+        "ES2013c#00220",
+        "ES2013c#00224",
+        "ES2013d#00232",
+        "ES2013d#00234"
+      ],
+      "required_facts": [
+        "expensive|cost",
+        "double curve|double-curve|curves",
+        "plastic",
+        "rubber",
+        "9.2|9.20|nine pounds twenty|nine point two"
+      ]
+    },
+    {
+      "question_id": "C04",
+      "team": "ES2015",
+      "category": "SPK+NUM",
+      "question": "Which Team ES2015 member recommended kinetic energy and a rubber casing for anti-RSI comfort in meeting c, and did both features survive into meeting d's final costed design and at what total operating cost?",
+      "expected_answer": "Speaker B (Industrial Designer) recommended kinetic energy and a rubber casing for anti-RSI comfort in meeting c. Both kinetic energy and the plastic-and-rubber casing remained in the final costed design in meeting d, with Speaker A reporting an operating cost of 12.20 Euros.",
+      "gold_turn_ids": [
+        "ES2015c#00021",
+        "ES2015c#00029",
+        "ES2015c#00031",
+        "ES2015d#00483",
+        "ES2015d#00488",
+        "ES2015d#00501"
+      ],
+      "required_facts": [
+        "speaker b",
+        "kinetic",
+        "rubber",
+        "12.20|12.2|twelve twenty|twelve point two"
+      ]
+    },
+    {
+      "question_id": "C05",
+      "team": "IS1000",
+      "category": "CD+RSN",
+      "question": "Team IS1000 debated including both an LCD screen and speech recognition under their 12.50 Euro budget. What did they decide about both features in meeting d, and how did they compensate for cutting the LCD screen?",
+      "expected_answer": "Although Team IS1000 considered both features in meeting c and early meeting d, they cut both the LCD screen and speech recognition to stay within the 12.50 Euro budget. To compensate for dropping the LCD screen, they added two extra buttons.",
+      "gold_turn_ids": [
+        "IS1000c#00136",
+        "IS1000d#00683",
+        "IS1000d#00716",
+        "IS1000d#00719",
+        "IS1000d#00722"
+      ],
+      "required_facts": [
+        "cut|drop|out|remov",
+        "lcd|l_c_d_|screen",
+        "speech|voice",
+        "two|couple of buttons|extra buttons|more buttons"
+      ]
+    },
+    {
+      "question_id": "C06",
+      "team": "IS1001",
+      "category": "CD+NUM",
+      "question": "Which fruit shape did Team IS1001 choose for their remote in meeting c, what practical advantage did Speaker A note for that choice, and what final production cost did Speaker A report in meeting d?",
+      "expected_answer": "Team IS1001 chose a yellow banana shape in meeting c, with Speaker A noting that because a banana is yellow it helps prevent losing the remote. In meeting d, Speaker A reported a final cost of 10.7 Euros, safely below the 12.50 Euro limit.",
+      "gold_turn_ids": [
+        "IS1001c#00177",
+        "IS1001c#00178",
+        "IS1001d#00013",
+        "IS1001d#00015"
+      ],
+      "required_facts": [
+        "banana",
+        "yellow|los|find",
+        "10.7|ten point seven|10.70"
+      ]
+    },
+    {
+      "question_id": "C07",
+      "team": "IS1004",
+      "category": "CD+RSN",
+      "question": "During Team IS1004's final costing in meeting d, what happened to the sample speaker and the rubber casing that had been considered, and why was each removed or changed?",
+      "expected_answer": "Speaker A removed the sample speaker because Speaker B clarified they were only using a simple beep locator rather than voice recording. When the costing still came out over budget, Speakers B and C switched the case material from rubber to plastic so the cost would fit the budget and leave margin for the base station.",
+      "gold_turn_ids": [
+        "IS1004c#00220",
+        "IS1004d#00378",
+        "IS1004d#00383",
+        "IS1004d#00448",
+        "IS1004d#00449"
+      ],
+      "required_facts": [
+        "beep",
+        "plastic",
+        "budget|cost|expensive"
+      ]
+    },
+    {
+      "question_id": "C08",
+      "team": "IS1005",
+      "category": "SPK+RSN",
+      "question": "In Team IS1005, which signal transmission technology did Speaker B recommend instead of radio frequency in meeting b and why, and what power combination did Speaker B say was required in meeting c to support both an LCD and speech recognition?",
+      "expected_answer": "In meeting b, Speaker B recommended sticking with infrared rather than radio frequency because infrared was much cheaper (radio frequency being 3 to 5 times more expensive) while offering fair range. In meeting c, Speaker B said combining common AA batteries with an additional solar cell was required to power both an LCD screen and speech recognition.",
+      "gold_turn_ids": [
+        "IS1005b#00080",
+        "IS1005b#00082",
+        "IS1005c#00102",
+        "IS1005c#00105"
+      ],
+      "required_facts": [
+        "infra|ir|i_r_",
+        "cheap|price|cost",
+        "batter",
+        "solar"
+      ]
+    },
+    {
+      "question_id": "C09",
+      "team": "IS1006",
+      "category": "CD+SPK",
+      "question": "In meeting c of Team IS1006, what case material and interface did Speaker C propose and why, and how did the prototype presented in meeting d differ with respect to the display?",
+      "expected_answer": "In meeting c, Speaker C proposed a titanium case (instead of rubber, which was expensive and hard to mold) and simple push buttons instead of an LCD to save money for speech recognition. In meeting d, however, the prototype still used a titanium case but actually included a non-touch LCD screen navigated with two directional buttons and a jog dial/wheel.",
+      "gold_turn_ids": [
+        "IS1006c#00016",
+        "IS1006c#00021",
+        "IS1006c#00036",
+        "IS1006d#00057",
+        "IS1006d#00233"
+      ],
+      "required_facts": [
+        "titanium",
+        "push button|push-button|pushbutton",
+        "lcd|l_c_d_|display|screen",
+        "jog|wheel|dial"
+      ]
+    },
+    {
+      "question_id": "C10",
+      "team": "TS3005",
+      "category": "CD+NUM",
+      "question": "Team TS3005's prototype costing in meeting d initially reached 18.50 Euros against the 12.50 Euro limit. Which major electronic feature did they drop, and what interface change did Speaker C propose to bring the total down to 11.50 Euros?",
+      "expected_answer": "After planning an LCD touch screen and speech recognition in meeting c, Team TS3005 dropped the sample speaker/sensor (speech recognition, worth 4 points) during meeting d's costing. Speaker C then proposed dropping the scroll wheel and relying solely on the touch screen, lowering the total to 11.50 Euros.",
+      "gold_turn_ids": [
+        "TS3005c#00034",
+        "TS3005d#00554",
+        "TS3005d#00627",
+        "TS3005d#00629",
+        "TS3005d#00654",
+        "TS3005d#00661"
+      ],
+      "required_facts": [
+        "speech|sample speaker|sample sensor",
+        "scroll",
+        "touch screen|touchscreen|lcd|l_c_d_",
+        "11.5|eleven point five|11.50"
+      ]
+    },
+    {
+      "question_id": "C11",
+      "team": "TS3008",
+      "category": "SPK+RSN",
+      "question": "Why did Team TS3008 argue against an LCD display in meeting c, and what unresolved budget problem did Speaker A identify regarding the docking station during meeting d's costing?",
+      "expected_answer": "In meeting c, Speaker A and Speaker D rejected an LCD display as fragile and mismatched with their sturdy, throwable rubber-and-plastic design (and Speaker D noted TVs would need to send data back). In meeting d, Speaker A pointed out that the docking station was missing from the cost sheet and could not be built for the remaining 30 cents.",
+      "gold_turn_ids": [
+        "TS3008c#00214",
+        "TS3008c#00215",
+        "TS3008d#00405",
+        "TS3008d#00511"
+      ],
+      "required_facts": [
+        "fragile|vulnerable|break|sturdy",
+        "docking station",
+        "thirty cents|30 cents|not included|no such thing"
+      ]
+    },
+    {
+      "question_id": "C12",
+      "team": "TS3012",
+      "category": "CD+NUM",
+      "question": "Team TS3012 considered including an LCD screen, speech recognition, and a yellow rubber case in meeting c. In meeting d, what initial total production cost did Speaker A calculate, and which two items did Speaker A cut to hit the 12.50 Euro limit while keeping the rubber case?",
+      "expected_answer": "In meeting d, Speaker A (Project Manager) calculated an initial production cost of 17 Euros for the design discussed in meeting c. To reach the 12.50 Euro limit while keeping the spongy rubber case and LCD, Speaker A cut speech recognition (bringing it to 13 Euros) and the special colour (delivering a black/grey base with optional separate covers).",
+      "gold_turn_ids": [
+        "TS3012c#00168",
+        "TS3012c#00177",
+        "TS3012d#00032",
+        "TS3012d#00043",
+        "TS3012d#00080"
+      ],
+      "required_facts": [
+        "17|seventeen",
+        "speech",
+        "special colour|special color|colour|color",
+        "12.5|twelve and a half|12.50|twelve point five"
+      ]
+    }
+  ]
+}

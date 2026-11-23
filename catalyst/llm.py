@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import time
 from dataclasses import dataclass, field
@@ -23,7 +24,9 @@ class PromptTooLarge(LLMError):
 
 
 class AllProvidersFailed(LLMError):
-    pass
+    def __init__(self, message: str, *, errors: list[dict] | None = None) -> None:
+        super().__init__(message)
+        self.errors = list(errors or [])
 
 
 class ProviderDisabled(LLMError):
@@ -40,11 +43,19 @@ class RequestTooLarge(LLMError):
 
 class ProviderError(LLMError):
     def __init__(
-        self, message: str, *, status: int | None = None, retryable: bool = False
+        self,
+        message: str,
+        *,
+        status: int | None = None,
+        retryable: bool = False,
+        code: str | None = None,
+        retry_after: float | None = None,
     ) -> None:
         super().__init__(message)
         self.status = status
         self.retryable = retryable
+        self.code = code
+        self.retry_after = retry_after
 
 
 @dataclass
@@ -71,6 +82,16 @@ class LLMResult:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _redact_secrets(text: str) -> str:
+    """Strip configured API keys and any ?key=... query tokens from logs/errors."""
+    out = str(text or "")
+    for secret in (config.GEMINI_API_KEY, config.GROQ_API_KEY):
+        if secret:
+            out = out.replace(secret, "<redacted>")
+    out = re.sub(r"([?&]key=)[^&\s'\"\\)]+", r"\1<redacted>", out, flags=re.IGNORECASE)
+    return out
 
 
 def _utc_date() -> str:
@@ -185,6 +206,32 @@ def _to_gemini_tools(tools: list[dict]) -> list[dict]:
     return declarations
 
 
+def _to_groq_tools(tools: list[dict]) -> list[dict]:
+    """Allow explicit null for optional parameters so Groq tool validation accepts them."""
+    converted: list[dict] = []
+    for tool in tools:
+        entry = json.loads(json.dumps(tool))
+        fn = entry.get("function") if isinstance(entry, dict) else None
+        params = fn.get("parameters") if isinstance(fn, dict) else None
+        if isinstance(params, dict):
+            required = set(params.get("required") or [])
+            props = params.get("properties")
+            if isinstance(props, dict):
+                for prop_name, schema in props.items():
+                    if prop_name in required or not isinstance(schema, dict):
+                        continue
+                    ptype = schema.get("type")
+                    if isinstance(ptype, str):
+                        schema["type"] = [ptype, "null"]
+                    elif isinstance(ptype, list) and "null" not in ptype:
+                        schema["type"] = [*ptype, "null"]
+                    if "enum" in schema and isinstance(schema["enum"], list):
+                        if None not in schema["enum"]:
+                            schema["enum"] = [*schema["enum"], None]
+        converted.append(entry)
+    return converted
+
+
 def parse_json_text(text: str) -> Any:
     cleaned = text.strip()
     if cleaned.startswith("```"):
@@ -207,6 +254,76 @@ def parse_json_text(text: str) -> Any:
             except Exception:
                 continue
     return None
+
+
+def _parse_duration_seconds(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value) if value > 0 else None
+    text = str(value).strip().lower()
+    if not text:
+        return None
+    try:
+        num = float(text)
+        return num if num > 0 else None
+    except ValueError:
+        pass
+    total = 0.0
+    matched = False
+    for amount, unit in re.findall(r"(\d+(?:\.\d+)?)\s*(ms|s|m|h)(?![a-z])", text):
+        matched = True
+        val = float(amount)
+        if unit == "ms":
+            total += val / 1000.0
+        elif unit == "s":
+            total += val
+        elif unit == "m":
+            total += val * 60.0
+        elif unit == "h":
+            total += val * 3600.0
+    return total if matched and total > 0 else None
+
+
+def _extract_retry_after(
+    headers: Any = None,
+    body_text: str = "",
+    body_obj: dict | None = None,
+    *,
+    max_seconds: float = 120.0,
+) -> float | None:
+    delay: float | None = None
+    if headers:
+        lower = {str(k).lower(): v for k, v in dict(headers).items()}
+        for key in (
+            "retry-after",
+            "x-ratelimit-reset-tokens",
+            "x-ratelimit-reset-requests",
+        ):
+            if key in lower:
+                delay = _parse_duration_seconds(lower[key])
+                if delay is not None:
+                    break
+    if delay is None and isinstance(body_obj, dict):
+        err = body_obj.get("error")
+        details = err.get("details") if isinstance(err, dict) else None
+        if isinstance(details, list):
+            for item in details:
+                if isinstance(item, dict) and "retryDelay" in item:
+                    delay = _parse_duration_seconds(item["retryDelay"])
+                    if delay is not None:
+                        break
+    if delay is None and body_text:
+        m = re.search(
+            r"(?:retry|try\s+again)\s+(?:in|after)\s+((?:\d+(?:\.\d+)?\s*(?:ms|s|m|h)(?![a-z])\s*)+)",
+            body_text,
+            re.IGNORECASE,
+        )
+        if m:
+            delay = _parse_duration_seconds(m.group(1))
+    if delay is None:
+        return None
+    return round(max(1.0, min(delay, max_seconds)), 2)
 
 
 class RateLimiter:
@@ -240,10 +357,16 @@ class RateLimiter:
     def _reset(self) -> None:
         today = _utc_date()
         if self.state.get("date") != today:
+            now = time.time()
+            active_circuits = {
+                model: c
+                for model, c in (self.state.get("circuits") or {}).items()
+                if isinstance(c, dict) and c.get("disabled_until", 0.0) > now
+            }
             self.state = {
                 "date": today,
                 "providers": {},
-                "circuits": self.state.get("circuits", {}),
+                "circuits": active_circuits,
             }
             self._save()
 
@@ -273,18 +396,25 @@ class RateLimiter:
                 f"{model} disabled until {circuit['disabled_until']}"
             )
 
-    def acquire(self, provider: str, estimated_tokens: int) -> None:
+    def acquire(
+        self, provider: str, estimated_tokens: int, *, bucket: str | None = None
+    ) -> None:
         self._reset()
-        limits = self.limits[provider]
-        state = self._provider(provider)
+        limits = dict(self.limits[provider])
+        if bucket and ":" in bucket:
+            model_name = bucket.split(":", 1)[1]
+            override = getattr(config, "MODEL_RATE_LIMITS", {}).get(model_name)
+            if override:
+                limits.update(override)
+        state = self._provider(bucket or provider)
         if estimated_tokens > limits["tpm"]:
             raise RequestTooLarge(
                 f"{provider}: {estimated_tokens} > TPM {limits['tpm']}"
             )
         if state["requests_today"] + 1 > limits["rpd"]:
-            raise DailyBudgetExceeded(f"{provider}: daily request limit")
+            raise DailyBudgetExceeded(f"{bucket or provider}: daily request limit")
         if state["tokens_today"] + estimated_tokens > limits["tpd"]:
-            raise DailyBudgetExceeded(f"{provider}: daily token limit")
+            raise DailyBudgetExceeded(f"{bucket or provider}: daily token limit")
 
         now = time.time()
         cutoff = now - 60
@@ -323,13 +453,18 @@ class RateLimiter:
         self._save()
 
     def record_tokens(
-        self, provider: str, actual_tokens: int, estimated_tokens: int
+        self,
+        provider: str,
+        actual_tokens: int,
+        estimated_tokens: int,
+        *,
+        bucket: str | None = None,
     ) -> None:
         diff = actual_tokens - estimated_tokens
         if diff == 0:
             return
         self._reset()
-        state = self._provider(provider)
+        state = self._provider(bucket or provider)
         state["tokens_today"] = max(0, state["tokens_today"] + diff)
         if state["token_events"]:
             state["token_events"][-1][1] = max(
@@ -337,9 +472,47 @@ class RateLimiter:
             )
         self._save()
 
-    def record_failure(self, model: str) -> None:
+    def refund_request(
+        self,
+        provider: str,
+        *,
+        bucket: str | None = None,
+    ) -> None:
+        """Refund a reserved request slot when a server 5xx/timeout prevented execution."""
+        self._reset()
+        state = self._provider(bucket or provider)
+        state["requests_today"] = max(0, state.get("requests_today", 0) - 1)
+        if state.get("requests"):
+            state["requests"].pop()
+        self._save()
+
+    def record_failure(
+        self,
+        model: str,
+        status: int | None = None,
+        retry_after: float | None = None,
+    ) -> None:
         self._reset()
         circuit = self._circuit(model)
+        if status == 429:
+            # Rate limits say "slow down", not "this model is broken". Honour
+            # the server retry delay (or a short default cooldown) without
+            # counting a health strike or opening a 10-minute breaker.
+            cooldown = (
+                retry_after
+                if retry_after is not None and retry_after > 0
+                else config.CIRCUIT_BREAKER_RATE_LIMIT_SECONDS
+            )
+            circuit["disabled_until"] = max(
+                circuit.get("disabled_until", 0.0),
+                time.time() + cooldown,
+            )
+            self._save()
+            return
+        if status is not None and 400 <= status < 500:
+            # Other client errors (bad schema, oversized request, auth) are
+            # request problems; retrying the same request will not fix them.
+            return
         circuit["failures"] = circuit.get("failures", 0) + 1
         if circuit["failures"] >= config.CIRCUIT_BREAKER_FAILURES:
             circuit["disabled_until"] = (
@@ -438,6 +611,13 @@ class LLM:
                         },
                     )
                 ]
+            if model_override in {
+                config.GEMINI_TERTIARY_MODEL,
+                config.GEMINI_QUATERNARY_MODEL,
+            }:
+                return [("gemini", model_override, {"attempts": 2})]
+            if model_override == config.GROQ_TERTIARY_MODEL:
+                return [("groq", model_override, {"attempts": 2})]
             raise ValueError(f"unknown model override: {model_override}")
 
         if tier == "bulk":
@@ -480,7 +660,7 @@ class LLM:
                     "thinking": {
                         "thinkingLevel": config.GEMINI_38_THINKING_FINAL
                     },
-                    "attempts": 2,
+                    "attempts": 1,
                 },
             ),
             (
@@ -499,6 +679,35 @@ class LLM:
                 {
                     "reasoning_effort": config.GROQ_FINAL_REASONING,
                     "attempts": 3,
+                },
+            ),
+            (
+                "groq",
+                config.GROQ_BULK_MODEL,
+                {
+                    "reasoning_effort": config.GROQ_BULK_REASONING,
+                    "attempts": 3,
+                },
+            ),
+            (
+                "gemini",
+                config.GEMINI_TERTIARY_MODEL,
+                {
+                    "attempts": 2,
+                },
+            ),
+            (
+                "groq",
+                config.GROQ_TERTIARY_MODEL,
+                {
+                    "attempts": 2,
+                },
+            ),
+            (
+                "gemini",
+                config.GEMINI_QUATERNARY_MODEL,
+                {
+                    "attempts": 2,
                 },
             ),
         ]
@@ -603,7 +812,7 @@ class LLM:
             "fallback_used": False,
             "latency_sec": round(latency, 3),
             "status": "error",
-            "error": error,
+            "error": _redact_secrets(error),
         }
         with self.metrics_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
@@ -669,11 +878,33 @@ class LLM:
                     }
                 )
                 continue
-            estimated = prompt_tokens + max_tokens
+            call_max_tokens = max_tokens
+            if provider == "groq":
+                if model == config.GROQ_TERTIARY_MODEL:
+                    # qwen/qwen3.8-27b enforces a 1,000 output-tokens-per-minute
+                    # (OTPM) cap on Groq's free tier; cap max_tokens cleanly under it.
+                    call_max_tokens = min(call_max_tokens, 750)
+                tpm = self.limiter.limits["groq"]["tpm"]
+                if prompt_tokens + call_max_tokens > tpm and prompt_tokens + 512 <= tpm:
+                    call_max_tokens = max(512, tpm - prompt_tokens - 128)
+            estimated = prompt_tokens + call_max_tokens
+            if provider == "groq":
+                # Reserve a small BPE/JSON-schema cushion inside Groq's 60s TPM
+                # window without falsely triggering RequestTooLarge.
+                tpm = self.limiter.limits["groq"]["tpm"]
+                if estimated <= tpm:
+                    estimated = min(tpm, int(estimated * 1.15))
             attempts = options.get("attempts", 2)
-            for attempt in range(1, attempts + 1):
+            reasoning_effort = options.get("reasoning_effort")
+            use_json_mode = response_schema is not None
+            json_effort_retry_done = False
+            json_drop_retry_done = False
+            bucket = f"{provider}:{model}"
+            attempt = 0
+            while attempt < attempts:
+                attempt += 1
                 try:
-                    self.limiter.acquire(provider, estimated)
+                    self.limiter.acquire(provider, estimated, bucket=bucket)
                 except (
                     DailyBudgetExceeded,
                     RequestTooLarge,
@@ -696,26 +927,38 @@ class LLM:
                             messages,
                             tools,
                             response_schema,
-                            max_tokens,
+                            call_max_tokens,
                             temperature,
                             options.get("thinking"),
                             timeout,
                         )
                     else:
+                        groq_schema = response_schema if use_json_mode else None
                         response = self._call_groq(
                             model,
                             messages,
                             tools,
-                            response_schema,
-                            max_tokens,
+                            groq_schema,
+                            call_max_tokens,
                             temperature,
-                            options.get("reasoning_effort"),
+                            reasoning_effort,
                             timeout,
                         )
+                        if (
+                            response_schema is not None
+                            and not use_json_mode
+                            and parse_json_text(response.text) is None
+                        ):
+                            raise ProviderError(
+                                "groq non-json fallback returned non-JSON output",
+                                status=422,
+                                retryable=False,
+                                code="invalid_json_output",
+                            )
                     latency = time.time() - started
                     actual_tokens = response.usage.get("total_tokens", estimated)
                     self.limiter.record_tokens(
-                        provider, actual_tokens, estimated
+                        provider, actual_tokens, estimated, bucket=bucket
                     )
                     self.limiter.record_success(model)
                     result = LLMResult(
@@ -740,26 +983,65 @@ class LLM:
                     return result
                 except ProviderError as exc:
                     latency = time.time() - started
-                    self.limiter.record_failure(model)
-                    errors.append(
-                        {
-                            "provider": provider,
-                            "model": model,
-                            "attempt": attempt,
-                            "status": exc.status,
-                            "error": str(exc),
-                            "latency_sec": round(latency, 3),
-                        }
+                    # Refund reserved estimated tokens so failed calls do not
+                    # burn phantom daily budget; also refund the daily request
+                    # slot on 5xx/network/timeout errors that never executed.
+                    self.limiter.record_tokens(provider, 0, estimated, bucket=bucket)
+                    if exc.status is None or exc.status >= 500:
+                        self.limiter.refund_request(provider, bucket=bucket)
+                    self.limiter.record_failure(
+                        model, status=exc.status, retry_after=exc.retry_after
                     )
+                    record = {
+                        "provider": provider,
+                        "model": model,
+                        "attempt": attempt,
+                        "status": exc.status,
+                        "error": str(exc),
+                        "latency_sec": round(latency, 3),
+                    }
+                    if exc.code:
+                        record["code"] = exc.code
+                    if exc.retry_after is not None:
+                        record["retry_after"] = exc.retry_after
+                    errors.append(record)
                     self._log_error(
                         provider, model, tier, str(exc), latency
                     )
+                    if (
+                        provider == "groq"
+                        and response_schema is not None
+                        and exc.code in {"json_validate_failed", "tool_use_failed"}
+                    ):
+                        # Verified empirically: Groq counts reasoning tokens
+                        # against max_tokens, leaving empty content when budget
+                        # runs out. First lower reasoning_effort to "low" and
+                        # expand max_tokens within TPM headroom; if json_object
+                        # mode still fails, drop response_format and parse JSON
+                        # ourselves via parse_json_text().
+                        tpm = self.limiter.limits["groq"]["tpm"]
+                        headroom = max(512, tpm - prompt_tokens - 128)
+                        bumped = min(max(call_max_tokens, 2048), headroom)
+                        if bumped > call_max_tokens:
+                            call_max_tokens = bumped
+                            estimated = prompt_tokens + call_max_tokens
+                        if reasoning_effort != "low" and not json_effort_retry_done:
+                            json_effort_retry_done = True
+                            reasoning_effort = "low"
+                            attempts += 1
+                            continue
+                        if use_json_mode and not json_drop_retry_done:
+                            json_drop_retry_done = True
+                            use_json_mode = False
+                            attempts += 1
+                            continue
                     if exc.retryable and attempt < attempts:
                         time.sleep(2 ** attempt)
                         continue
                     break
                 except Exception as exc:
                     latency = time.time() - started
+                    self.limiter.record_tokens(provider, 0, estimated, bucket=bucket)
                     self.limiter.record_failure(model)
                     message = f"{type(exc).__name__}: {exc}"
                     errors.append(
@@ -774,8 +1056,21 @@ class LLM:
                     self._log_error(provider, model, tier, message, latency)
                     break
 
+        summary_lines = [
+            f"All {len(candidates)} LLM provider candidates failed (tier={tier}); "
+            "no fallback response was fabricated. Check API keys, quotas, or cooldowns."
+        ]
+        for err in errors:
+            model = err.get("model", "?")
+            status = err.get("status")
+            tag = f"HTTP {status}" if status else ("skipped" if err.get("skipped") else "error")
+            retry_note = f", retry_after={err['retry_after']}s" if err.get("retry_after") else ""
+            summary_lines.append(f"  - {err.get('provider')}:{model} ({tag}{retry_note}): {str(err.get('error', ''))[:180]}")
         raise AllProvidersFailed(
-            json.dumps(errors, indent=2, ensure_ascii=False)
+            "\n".join(summary_lines)
+            + "\nDetails:\n"
+            + json.dumps(errors, indent=2, ensure_ascii=False),
+            errors=errors,
         )
 
     def _call_gemini(
@@ -816,42 +1111,58 @@ class LLM:
             "https://generativelanguage.googleapis.com/v1beta/models/"
             f"{model}:generateContent"
         )
+        headers = {"x-goog-api-key": config.GEMINI_API_KEY}
         try:
             response = requests.post(
                 url,
-                params={"key": config.GEMINI_API_KEY},
+                headers=headers,
                 json=body,
                 timeout=timeout,
             )
         except requests.Timeout as exc:
-            raise ProviderError(f"timeout: {exc}", retryable=True) from exc
+            raise ProviderError(_redact_secrets(f"timeout: {exc}"), retryable=True) from exc
         except requests.RequestException as exc:
-            raise ProviderError(f"request error: {exc}", retryable=True) from exc
+            raise ProviderError(_redact_secrets(f"request error: {exc}"), retryable=True) from exc
 
         if response.status_code == 400 and thinking:
             body["generationConfig"].pop("thinkingConfig", None)
             try:
                 response = requests.post(
                     url,
-                    params={"key": config.GEMINI_API_KEY},
+                    headers=headers,
                     json=body,
                     timeout=timeout,
                 )
             except requests.RequestException as exc:
                 raise ProviderError(
-                    f"request error: {exc}", retryable=True
+                    _redact_secrets(f"request error: {exc}"), retryable=True
                 ) from exc
 
         if response.status_code != 200:
             status = response.status_code
-            retryable = status in (429, 500, 502, 503, 504)
-            detail = response.text[:500].replace(
-                config.GEMINI_API_KEY, "<redacted>"
-            )
+            # 429 is handled by failing over to the next candidate; retrying
+            # in-provider just burns the local rate budget.
+            retryable = status in (500, 502, 503, 504)
+            retry_after = None
+            if status == 429:
+                try:
+                    parsed_err = response.json()
+                except Exception:
+                    parsed_err = None
+                if "per day" in response.text.lower() or "generate_content_free_tier_requests" in response.text:
+                    # Daily quota exhausted; cool down for 1 hour rather than
+                    # hammering a dead daily limit every minute.
+                    retry_after = 3600.0
+                else:
+                    retry_after = _extract_retry_after(
+                        response.headers, response.text, parsed_err
+                    )
+            detail = _redact_secrets(response.text[:500])
             raise ProviderError(
                 f"HTTP {status}: {detail}",
                 status=status,
                 retryable=retryable,
+                retry_after=retry_after,
             )
         return self._parse_gemini(response.json())
 
@@ -901,8 +1212,12 @@ class LLM:
             "temperature": temperature,
         }
         if tools:
-            kwargs["tools"] = tools
+            kwargs["tools"] = _to_groq_tools(tools)
             kwargs["tool_choice"] = "auto"
+            # Tool-calling steps don't need heavy reasoning; low effort avoids
+            # burning the completion budget and keeps TPD usage lean.
+            if reasoning_effort == "medium":
+                reasoning_effort = "low"
         if response_schema:
             kwargs["response_format"] = {"type": "json_object"}
         if reasoning_effort:
@@ -916,12 +1231,47 @@ class LLM:
                 response = getattr(exc, "response", None)
                 status = getattr(response, "status_code", None)
             name = type(exc).__name__
-            retryable = status in (429, 500, 502, 503, 504) or name in {
+            code = None
+            body = getattr(exc, "body", None)
+            if isinstance(body, str):
+                try:
+                    body = json.loads(body)
+                except Exception:
+                    body = None
+            if isinstance(body, dict):
+                error = body.get("error")
+                if isinstance(error, dict):
+                    code = error.get("code")
+            retry_after = None
+            if status == 429:
+                resp_obj = getattr(exc, "response", None)
+                resp_headers = getattr(resp_obj, "headers", None)
+                exc_lower = str(exc).lower()
+                is_daily = any(
+                    tok in exc_lower
+                    for tok in ("tokens per day", "(tpd)", "requests per day", "(rpd)", "per day")
+                )
+                retry_after = _extract_retry_after(
+                    resp_headers,
+                    str(exc),
+                    body if isinstance(body, dict) else None,
+                    max_seconds=3600.0 if is_daily else 120.0,
+                )
+                if is_daily and (retry_after is None or retry_after < 300.0):
+                    retry_after = max(retry_after or 0.0, 1800.0)
+            retryable = status in (500, 502, 503, 504) or name in {
                 "APITimeoutError",
                 "APIConnectionError",
             }
+            message = f"{name}: {exc}"
+            if config.GROQ_API_KEY:
+                message = message.replace(config.GROQ_API_KEY, "<redacted>")
             raise ProviderError(
-                f"{name}: {exc}", status=status, retryable=retryable
+                message,
+                status=status,
+                retryable=retryable,
+                code=code,
+                retry_after=retry_after,
             ) from exc
 
         choice = completion.choices[0]

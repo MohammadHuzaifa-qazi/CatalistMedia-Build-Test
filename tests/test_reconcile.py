@@ -468,3 +468,52 @@ def test_delete_then_insert_is_scoped():
     assert conn.execute(
         "SELECT COUNT(*) FROM disagreement_resolved_by WHERE scope = 'asof_c'"
     ).fetchone()[0] == 1
+
+
+def test_decision_status_uses_reconciled_topic_key_map():
+    conn = make_db()
+    # d3 has raw topic_key='battery', d4 has raw topic_key='power'.
+    # Reconcile clusters both into 'power_source' in topic_key_map.
+    proposals = {
+        "topics": [
+            {
+                "topic": "power source",
+                "topic_key": "power_source",
+                "decision_ids": ["d3", "d4"],
+            }
+        ],
+        "supersedes": [],
+        "action_closures": [],
+        "disagreement_resolutions": [],
+    }
+    reconcile.apply_proposals(conn, "TS3012", "all", proposals, result())
+
+    ctx_all = tools.RunContext(team="TS3012", as_of=None, mode="answer")
+    assert status.decision_status(conn, ctx_all, "d3", "TS3012", "c", "battery") == "superseded"
+    assert status.decision_status(conn, ctx_all, "d4", "TS3012", "d", "power") == "current"
+
+    ledger_decs = {
+        r["id"]: r for r in tools.ledger(conn, ctx_all, kind="decisions")
+    }
+    assert ledger_decs["d3"]["status"] == "superseded"
+    assert ledger_decs["d4"]["status"] == "current"
+    assert ledger_decs["d3"]["topic_key"] == "power_source"
+
+
+def test_asof_c_reconcile_prompts_never_contain_d():
+    conn = make_db()
+    recs = reconcile.records_for_scope(conn, "TS3012", "asof_c")
+    decs = [r for r in recs if r["kind"] == "decision"]
+    acts = [r for r in recs if r["kind"] == "action"]
+    diss = [r for r in recs if r["kind"] == "disagreement"]
+    later = reconcile._later_evidence_lines(decs, [], "a")
+    prompts = [
+        reconcile._decision_prompt("TS3012", "asof_c", reconcile._decision_lines(decs)),
+        reconcile._supersede_prompt("TS3012", "asof_c", reconcile._decision_lines(decs)),
+        reconcile._action_prompt("TS3012", "asof_c", reconcile._action_lines(acts), later),
+        reconcile._disagreement_prompt("TS3012", "asof_c", reconcile._disagreement_lines(diss), later),
+    ]
+    for p in prompts:
+        assert "TS3012d" not in p
+        assert "d4" not in p
+        assert "rechargeable pack" not in p

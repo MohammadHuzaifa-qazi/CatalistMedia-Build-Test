@@ -717,8 +717,23 @@ validate_brief(brief, ctx):
 
 ## 14. Open / NOT VERIFIED
 
-- Gemini free-tier RPM/RPD/TPM (AI Studio only).
-- `thinking_level` accepted values (test against the live API; a blog reports `"minimal"` errors).
-- Actual billed cost, `thoughts_token_count`, and provider-tokenizer counts (no keys); **$2.6 is a lower bound**.
-- Letter stability across meetings (assumption).
-- 1,000/10,000 embed times are linear extrapolations.
+- Gemini free-tier TPM/TPD (AI Studio only; RPM=5 and RPD=20 were empirically observed via live HTTP 429 responses in final testing).
+- Actual paid-tier billing invoices for Gemini 2.5 Flash and Groq (`openai/gpt-oss-120b`/`20b`) — reference prices remain tagged `NOT VERIFIED (ASSUMPTION)` in `catalyst/cost_estimate.py`.
+- Letter stability across meetings (assumption; roles are extracted only from self-stated introductions and treated as best-effort).
+- 1,000- and 10,000-meeting embedding, ledger, and reconcile figures are linear extrapolations (not benchmarked at scale).
+
+---
+
+## 15. Final implementation reconciliation
+
+The production implementation in `catalyst/` follows this v2.3 specification with the following empirical refinements discovered during full build and live runs:
+
+1. **Runtime environment:** Executed and verified on Python `3.12.2` with `chromadb 1.5.9` and `fastembed` (`BAAI/bge-small-en-v1.5`, 384-dim, 4 threads).
+2. **Sustained CPU embedding throughput:** The full corpus run (`23,757` new windows, `23,821` total in Chroma) ran at **`2.34 centres/s`** (`2.82 hours` wall time) rather than the `5.56 centres/s` 500-turn micro-benchmark — all scale estimates in `catalyst/cost_estimate.py` and `ARCHITECTURE.md` use the measured `2.34 centres/s` rate (`20.49 h` for 1,000 meetings, `204.91 h` for 10,000 meetings on CPU).
+3. **LLM provider behavior & security:**
+   - Gemini free-tier quota was empirically verified at **5 RPM / 20 RPD** per model (`gemini-3.8-flash` also experienced frequent `503 UNAVAILABLE` / read timeouts, so circuit breaking opens after 3 consecutive errors and `final`-tier attempts on `3.8-flash` were capped at 1).
+   - Gemini authentication was hardened to use the `x-goog-api-key` HTTP header (never query-string `?key=`), and `catalyst/llm.py` redacts any secret tokens from exception messages and logs.
+   - `gemini-2.5-flash` uses `thinkingBudget=0` for `fast`/extraction calls and `thinkingBudget=1024` for `final`/synthesis/reconcile calls; `brief.py` uses `max_tokens=2560` on `decided`, `open_actions`, and `open_disagreements` so thinking tokens never truncate JSON output.
+   - Groq `openai/gpt-oss-120b` / `openai/gpt-oss-20b` count reasoning tokens against `max_completion_tokens`, so JSON synthesis calls request adequate output headroom and parse compound Groq retry delays (e.g., `15m23.4s`) on daily TPD 429s.
+4. **Agent loop & retrieval hardening:** `catalyst/agent.py` uses an `EvidenceNotebook` with zero-LLM-cost initial hybrid seeding (`search` + `seq-4..seq+10` neighbor expansion + latest-meeting budget/costing seeding when cost/budget terms appear + self-stated role hints from meetings `a`/`b`), a forced-synthesis fallback on the final step when `max_steps` is reached, and deterministic quote/length/scope validation with bounded repair (`catalyst/validate.py`).
+5. **See `ARCHITECTURE.md`, `WRITEUP.md`, and `FINAL_AUDIT_REPORT.md`** for exact final measurements, custom evaluation results, and verified deliverables.

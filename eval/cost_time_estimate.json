@@ -1,0 +1,257 @@
+{
+  "generated_at": "2026-11-23T15:02:12.065315+00:00",
+  "measured_baselines": {
+    "corpus": {
+      "meetings": 138,
+      "teams": 35,
+      "turns": 48148,
+      "citable_ge6": 23821,
+      "citable_per_meeting": 172.62,
+      "status": "VERIFIED"
+    },
+    "embeddings_full_run": {
+      "model": "BAAI/bge-small-en-v1.5",
+      "centres_embedded": 23757,
+      "total_collection": 23821,
+      "elapsed_sec": 10149.7,
+      "centres_per_sec": 2.34,
+      "status": "VERIFIED (work/embed.out.log)"
+    },
+    "ts3012_ledger_4_meetings": {
+      "meetings": 4,
+      "windows": 20,
+      "prompt_tokens": 72413,
+      "completion_tokens": 15489,
+      "thoughts_tokens": 204,
+      "billed_output_tokens": 15693,
+      "elapsed_sec": 183.8,
+      "tokens_per_meeting": 22026.5,
+      "sec_per_meeting": 45.95,
+      "status": "VERIFIED (work/metrics/ledger.json); TS3012 has 5.0 windows/mtg vs 3.01 corpus avg (conservative upper bound)"
+    },
+    "ts3012_reconcile_2_scopes": {
+      "scopes": 2,
+      "calls": 8,
+      "prompt_tokens": 23265,
+      "completion_tokens": 5866,
+      "thoughts_tokens": 7357,
+      "billed_output_tokens": 13223,
+      "thoughts_share_of_billed_output": 0.5564,
+      "elapsed_sec": 145.13,
+      "status": "VERIFIED (work/metrics/reconcile.json, gemini-2.5-flash)"
+    },
+    "agent_per_question": {
+      "gemini-2.5-flash": {
+        "n": 3,
+        "avg_calls": 2.33,
+        "avg_prompt_tokens": 7316.0,
+        "avg_completion_tokens": 288.7,
+        "avg_thoughts_tokens": 1078.7,
+        "avg_billed_output_tokens": 1361.0,
+        "status": "VERIFIED (measured)"
+      },
+      "gemini-3.5-flash-lite": {
+        "n": 2,
+        "avg_calls": 4.0,
+        "avg_prompt_tokens": 15825.0,
+        "avg_completion_tokens": 389.0,
+        "avg_thoughts_tokens": 51.5,
+        "avg_billed_output_tokens": 389.0,
+        "status": "VERIFIED (measured)"
+      },
+      "openai/gpt-oss-120b": {
+        "n": 6,
+        "avg_calls": 3.0,
+        "avg_prompt_tokens": 10714.2,
+        "avg_completion_tokens": 1514.5,
+        "avg_thoughts_tokens": 1258.2,
+        "avg_billed_output_tokens": 1514.5,
+        "status": "VERIFIED (measured)"
+      },
+      "openai/gpt-oss-20b": {
+        "n": 11,
+        "avg_calls": 4.0,
+        "avg_prompt_tokens": 13621.6,
+        "avg_completion_tokens": 626.6,
+        "avg_thoughts_tokens": 321.5,
+        "avg_billed_output_tokens": 626.6,
+        "status": "VERIFIED (measured)"
+      },
+      "qwen/qwen3.8-27b": {
+        "n": 3,
+        "avg_calls": 3.0,
+        "avg_prompt_tokens": 11744.7,
+        "avg_completion_tokens": 375.3,
+        "avg_thoughts_tokens": 0.0,
+        "avg_billed_output_tokens": 375.3,
+        "status": "VERIFIED (measured)"
+      },
+      "all_passed": {
+        "n": 25,
+        "avg_calls": 3.44,
+        "avg_prompt_tokens": 12118.2,
+        "avg_completion_tokens": 750.0,
+        "avg_thoughts_tokens": 577.0,
+        "avg_billed_output_tokens": 878.7,
+        "status": "VERIFIED (measured)"
+      }
+    }
+  },
+  "pricing": {
+    "gemini-3.8-flash_through_2026": {
+      "input_per_1m_usd": 0.75,
+      "output_per_1m_usd": 3.75,
+      "status": "VERIFIED",
+      "source": "PHASE2_DESIGN.md §1.2 (official Google pricing page, Nov 2026; valid through 2026-12-31)",
+      "thoughts_billed_as_output": true
+    },
+    "gemini-3.8-flash_from_2027": {
+      "input_per_1m_usd": 1.5,
+      "output_per_1m_usd": 7.5,
+      "status": "VERIFIED",
+      "source": "PHASE2_DESIGN.md §1.2 (official Google pricing page, Nov 2026; effective 2027-01-01)",
+      "thoughts_billed_as_output": true
+    },
+    "gemini-2.5-flash_paid": {
+      "input_per_1m_usd": 0.3,
+      "output_per_1m_usd": 2.5,
+      "status": "NOT VERIFIED (ASSUMPTION)",
+      "source": "Approximate reference price; verify on Google AI Studio pricing page before budgeting",
+      "thoughts_billed_as_output": true
+    },
+    "groq_gpt_oss_120b_paid": {
+      "input_per_1m_usd": 0.15,
+      "output_per_1m_usd": 0.75,
+      "status": "NOT VERIFIED (ASSUMPTION)",
+      "source": "PHASE2_DESIGN.md §1.4 assumption",
+      "thoughts_billed_as_output": true
+    },
+    "groq_gpt_oss_20b_paid": {
+      "input_per_1m_usd": 0.1,
+      "output_per_1m_usd": 0.5,
+      "status": "NOT VERIFIED (ASSUMPTION)",
+      "source": "PHASE2_DESIGN.md §1.4 assumption",
+      "thoughts_billed_as_output": true
+    }
+  },
+  "free_tier_limits": {
+    "gemini-2.5-flash": {
+      "rpm": 5,
+      "rpd": 20,
+      "rpm_rpd_status": "VERIFIED (measured from live HTTP 429 responses)",
+      "tpm_tpd_status": "NOT VERIFIED (unpublished in official docs; AI Studio only)"
+    },
+    "gemini-3.8-flash": {
+      "rpm": 5,
+      "rpd": 20,
+      "rpm_rpd_status": "VERIFIED (measured from live HTTP 429 response, limit: 20)",
+      "availability_note": "Frequent 503 UNAVAILABLE / ReadTimeout during testing"
+    },
+    "groq_gpt_oss_120b": {
+      "rpm": 30,
+      "rpd": 1000,
+      "tpm": 8000,
+      "tpd": 200000,
+      "status": "VERIFIED (official Groq docs + live response headers)"
+    },
+    "groq_gpt_oss_20b": {
+      "rpm": 30,
+      "rpd": 1000,
+      "tpm": 8000,
+      "tpd": 200000,
+      "status": "VERIFIED (official Groq docs + live response headers)"
+    }
+  },
+  "scales": {
+    "138_meetings": {
+      "meetings": 138,
+      "est_teams": 35,
+      "est_turns": 48148,
+      "est_citable_centres": 23821,
+      "raw_vectors_mb": 34.9,
+      "extrapolation_status": "VERIFIED corpus counts; ledger/reconcile extrapolated from 4-meeting TS3012 run",
+      "embeddings_cpu": {
+        "centres_per_sec": 2.34,
+        "hours": 2.83,
+        "days": 0.12,
+        "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+      },
+      "ledger_plus_reconcile": {
+        "ledger_prompt_tokens": 2498248,
+        "ledger_billed_output_tokens": 541408,
+        "reconcile_prompt_tokens": 407138,
+        "reconcile_billed_output_tokens": 231402,
+        "reconcile_thoughts_tokens_included": 128748,
+        "total_prompt_tokens": 2905386,
+        "total_billed_output_tokens": 772810,
+        "serial_llm_hours_at_measured_pace": 2.47,
+        "estimated_cost_usd": {
+          "gemini_3.8_flash_2026_VERIFIED_price": 5.0771,
+          "gemini_3.8_flash_2027_VERIFIED_price": 10.1542,
+          "gemini_2.5_flash_ASSUMPTION_price": 2.8036,
+          "groq_gpt_oss_120b_ASSUMPTION_price": 1.0154
+        }
+      }
+    },
+    "1000_meetings": {
+      "meetings": 1000,
+      "est_teams": 254,
+      "est_turns": 348899,
+      "est_citable_centres": 172616,
+      "raw_vectors_mb": 252.9,
+      "extrapolation_status": "LINEAR EXTRAPOLATION (NOT VERIFIED at scale)",
+      "embeddings_cpu": {
+        "centres_per_sec": 2.34,
+        "hours": 20.49,
+        "days": 0.85,
+        "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+      },
+      "ledger_plus_reconcile": {
+        "ledger_prompt_tokens": 18103250,
+        "ledger_billed_output_tokens": 3923250,
+        "reconcile_prompt_tokens": 2954655,
+        "reconcile_billed_output_tokens": 1679321,
+        "reconcile_thoughts_tokens_included": 934339,
+        "total_prompt_tokens": 21057905,
+        "total_billed_output_tokens": 5602571,
+        "serial_llm_hours_at_measured_pace": 17.88,
+        "estimated_cost_usd": {
+          "gemini_3.8_flash_2026_VERIFIED_price": 36.8031,
+          "gemini_3.8_flash_2027_VERIFIED_price": 73.6061,
+          "gemini_2.5_flash_ASSUMPTION_price": 20.3238,
+          "groq_gpt_oss_120b_ASSUMPTION_price": 7.3606
+        }
+      }
+    },
+    "10000_meetings": {
+      "meetings": 10000,
+      "est_teams": 2536,
+      "est_turns": 3488986,
+      "est_citable_centres": 1726159,
+      "raw_vectors_mb": 2528.6,
+      "extrapolation_status": "LINEAR EXTRAPOLATION (NOT VERIFIED at scale)",
+      "embeddings_cpu": {
+        "centres_per_sec": 2.34,
+        "hours": 204.91,
+        "days": 8.54,
+        "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+      },
+      "ledger_plus_reconcile": {
+        "ledger_prompt_tokens": 181032500,
+        "ledger_billed_output_tokens": 39232500,
+        "reconcile_prompt_tokens": 29500020,
+        "reconcile_billed_output_tokens": 16766764,
+        "reconcile_thoughts_tokens_included": 9328676,
+        "total_prompt_tokens": 210532520,
+        "total_billed_output_tokens": 55999264,
+        "serial_llm_hours_at_measured_pace": 178.76,
+        "estimated_cost_usd": {
+          "gemini_3.8_flash_2026_VERIFIED_price": 367.8966,
+          "gemini_3.8_flash_2027_VERIFIED_price": 735.7933,
+          "gemini_2.5_flash_ASSUMPTION_price": 203.1579,
+          "groq_gpt_oss_120b_ASSUMPTION_price": 73.5793
+        }
+      }
+    }
+  }
+}

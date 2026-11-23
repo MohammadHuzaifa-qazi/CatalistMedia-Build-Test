@@ -131,7 +131,12 @@ def validate_brief(conn: sqlite3.Connection, ctx, brief: dict) -> tuple[bool, li
 
     bullets = brief.get("bullets")
     if bullets is None:
-        bullets = [{"text": line} for line in raw.splitlines() if line.strip()]
+        bullets = [
+            {"text": line}
+            for line in raw.splitlines()
+            if line.strip()
+            and not re.match(r"^(?:#+\s+.+|[A-Z][A-Z0-9 /+&-]{2,}:)$", line.strip())
+        ]
 
     for bullet in bullets:
         text = bullet.get("text", "")

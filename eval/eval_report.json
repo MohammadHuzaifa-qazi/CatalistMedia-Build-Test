@@ -1,0 +1,1412 @@
+{
+  "generated_at": "2026-11-23T15:03:35.143015+00:00",
+  "questions_path": "eval\\eval_questions.json",
+  "custom_eval": {
+    "n_questions": 12,
+    "use_ledger": false,
+    "passed_validation": 10,
+    "failed_validation": 2,
+    "failed_llm_errors": 2,
+    "validation_pass_rate": 0.8333,
+    "multi_meeting_count": 7,
+    "multi_meeting_rate": 0.5833,
+    "verified_citations": 22,
+    "total_citations": 22,
+    "citation_validity_rate": 1.0,
+    "mean_gold_retrieval_recall": 0.5764,
+    "mean_gold_citation_recall": 0.2583,
+    "mean_fact_recall": 0.632,
+    "automated_fact_tiers": {
+      "all_required_facts_matched_and_verified": 4,
+      "partial_required_facts_matched_and_verified": 6,
+      "zero_facts_or_failed_validation": 2,
+      "note": "Deterministic required_facts substring recall only; NOT a substitute for human_rubric_score."
+    },
+    "results": [
+      {
+        "question_id": "C01",
+        "team": "ES2005",
+        "category": "NUM+CD",
+        "question": "Team ES2005's first production costing in meeting d came out over their 12.50 Euro limit. What initial cost did Speaker C report, why was it inflated, and what final cost did they reach once that error was corrected?",
+        "expected_answer": "Against their 12.50 Euro production target (ES2005a), Speaker C initially reported a cost of 14.6 Euros in meeting d because double-curved casing had been mistakenly entered as quantity two instead of one; fixing it to one removed 3 Euros and brought the total down to 11.60 Euros.",
+        "predicted_answer": "Speaker C initially reported a cost of fourteen point six Euros, which was inflated because the spreadsheet accidentally counted the double-curved shape as two separate items instead of one. Once this error was corrected by removing the duplicate entry, the final cost reached eleven Euros sixty.",
+        "ok": true,
+        "errors": [],
+        "warnings": [
+          "single_meeting"
+        ],
+        "citations": [
+          {
+            "meeting_id": "ES2005d",
+            "quote": "minus the extra scroll buttons, uh it's gonna cost us fourteen point six Euros",
+            "turn_id": "ES2005d#00071"
+          },
+          {
+            "meeting_id": "ES2005d",
+            "quote": "W why is the uh double curved two of them?",
+            "turn_id": "ES2005d#00083"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "ES2005d"
+        ],
+        "gold_turn_ids": [
+          "ES2005a#00033",
+          "ES2005d#00071",
+          "ES2005d#00083",
+          "ES2005d#00105",
+          "ES2005d#00112"
+        ],
+        "gold_retrieval_recall": 1.0,
+        "gold_citation_recall": 0.4,
+        "fact_check": {
+          "matched": 3,
+          "total": 3,
+          "recall": 1.0,
+          "missing": []
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_ee3468f4ecbd",
+          "question_id": "C01",
+          "team": "ES2005",
+          "calls": 5,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 23279,
+            "completion_tokens": 503,
+            "thoughts_tokens": 0,
+            "total_tokens": 23782,
+            "billed_output_tokens": 503
+          },
+          "elapsed_sec": 247.02
+        }
+      },
+      {
+        "question_id": "C02",
+        "team": "ES2012",
+        "category": "SPK+CD",
+        "question": "In Team ES2012, who proposed putting the batteries inside interchangeable covers, why did Speaker A object to that idea, and what final interface and production cost did Speaker A report in meeting d?",
+        "expected_answer": "Speaker C (User Interface Designer) proposed putting the batteries inside the cover in meeting c, and Speaker A objected that adding a connector would introduce unreliability compared to soldering the unit together. In meeting d, Speaker A reported a design using push buttons and a simple slider (no scroll wheel) at 12.50 Euros.",
+        "predicted_answer": "Speaker C proposed putting the batteries in the interchangeable covers, but Speaker A objected because it would introduce a connection point and unreliability compared to a completely soldered, plumbed-in design. In meeting d, Speaker A reported that the team would use a regular standard chip to meet the constraints.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "ES2012c",
+            "quote": "What if we included the batteries in the cover?",
+            "turn_id": "ES2012c#00159"
+          },
+          {
+            "meeting_id": "ES2012c",
+            "quote": "you've then got the connection and you've immediately got a sort of unreliability",
+            "turn_id": "ES2012c#00164"
+          },
+          {
+            "meeting_id": "ES2012d",
+            "quote": "we will have to find a s a regular standard chip to to do this with",
+            "turn_id": "ES2012d#00057"
+          }
+        ],
+        "verified_citations": 3,
+        "total_citations": 3,
+        "meetings_cited": [
+          "ES2012c",
+          "ES2012d"
+        ],
+        "gold_turn_ids": [
+          "ES2012c#00159",
+          "ES2012c#00164",
+          "ES2012d#00057"
+        ],
+        "gold_retrieval_recall": 1.0,
+        "gold_citation_recall": 1.0,
+        "fact_check": {
+          "matched": 2,
+          "total": 4,
+          "recall": 0.5,
+          "missing": [
+            "push button|push-button|slider",
+            "12.5|twelve point five|12.50|twelve and a half"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_412fa720a4f8",
+          "question_id": "C02",
+          "team": "ES2012",
+          "calls": 3,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 13391,
+            "completion_tokens": 372,
+            "thoughts_tokens": 0,
+            "total_tokens": 13763,
+            "billed_output_tokens": 372
+          },
+          "elapsed_sec": 179.7
+        }
+      },
+      {
+        "question_id": "C03",
+        "team": "ES2013",
+        "category": "CD+NUM",
+        "question": "Why did Team ES2013 eliminate titanium for the remote's case in meeting c, what two case materials did they combine in the final costed design, and what total production cost did Speaker A calculate?",
+        "expected_answer": "Speaker A explained in meeting c that titanium was eliminated because it was too expensive and could not support double curves. In meeting d, they combined plastic and rubber for the case and Speaker A calculated a total cost of 9.20 (nine Pounds twenty), well below the 12.50 limit.",
+        "predicted_answer": "Team ES2013 eliminated titanium in meeting c because it was considered too expensive, too futuristic, and difficult to shape into double curves. In the final costed design, they combined plastic and rubber for the case, and Speaker A calculated a total production cost of nine pounds twenty.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "ES2013c",
+            "quote": "titanium would be great, but I think it might be a bit too expensive and too kinda spacey",
+            "turn_id": "ES2013c#00129"
+          },
+          {
+            "meeting_id": "ES2013d",
+            "quote": "the total cost has been calculated as nine Pounds twenty out of the twelve and a half we were allowed",
+            "turn_id": "ES2013d#00234"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "ES2013c",
+          "ES2013d"
+        ],
+        "gold_turn_ids": [
+          "ES2013c#00220",
+          "ES2013c#00224",
+          "ES2013d#00232",
+          "ES2013d#00234"
+        ],
+        "gold_retrieval_recall": 0.5,
+        "gold_citation_recall": 0.25,
+        "fact_check": {
+          "matched": 5,
+          "total": 5,
+          "recall": 1.0,
+          "missing": []
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_81537f74425f",
+          "question_id": "C03",
+          "team": "ES2013",
+          "calls": 3,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "openai/gpt-oss-20b",
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 11488,
+            "completion_tokens": 336,
+            "thoughts_tokens": 14,
+            "total_tokens": 11824,
+            "billed_output_tokens": 336
+          },
+          "elapsed_sec": 125.08
+        }
+      },
+      {
+        "question_id": "C04",
+        "team": "ES2015",
+        "category": "SPK+NUM",
+        "question": "Which Team ES2015 member recommended kinetic energy and a rubber casing for anti-RSI comfort in meeting c, and did both features survive into meeting d's final costed design and at what total operating cost?",
+        "expected_answer": "Speaker B (Industrial Designer) recommended kinetic energy and a rubber casing for anti-RSI comfort in meeting c. Both kinetic energy and the plastic-and-rubber casing remained in the final costed design in meeting d, with Speaker A reporting an operating cost of 12.20 Euros.",
+        "predicted_answer": "Speaker B (the Industrial Designer) recommended kinetic energy and a rubber casing for anti-RSI comfort in meeting c, and both features survived into meeting d's final design at a total operating cost of twelve point twenty Euros.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "ES2015c",
+            "quote": "Rubber casing I thing would probably the best, if we're going for the anti-R_S_I_",
+            "turn_id": "ES2015c#00031"
+          },
+          {
+            "meeting_id": "ES2015d",
+            "quote": "So um our operating cost is twelve twenty Euros.",
+            "turn_id": "ES2015d#00501"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "ES2015c",
+          "ES2015d"
+        ],
+        "gold_turn_ids": [
+          "ES2015c#00021",
+          "ES2015c#00029",
+          "ES2015c#00031",
+          "ES2015d#00483",
+          "ES2015d#00488",
+          "ES2015d#00501"
+        ],
+        "gold_retrieval_recall": 0.8333,
+        "gold_citation_recall": 0.3333,
+        "fact_check": {
+          "matched": 3,
+          "total": 4,
+          "recall": 0.75,
+          "missing": [
+            "12.20|12.2|twelve twenty|twelve point two"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_00194ea4b8d8",
+          "question_id": "C04",
+          "team": "ES2015",
+          "calls": 2,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 7060,
+            "completion_tokens": 261,
+            "thoughts_tokens": 0,
+            "total_tokens": 7321,
+            "billed_output_tokens": 261
+          },
+          "elapsed_sec": 118.68
+        }
+      },
+      {
+        "question_id": "C05",
+        "team": "IS1000",
+        "category": "CD+RSN",
+        "question": "Team IS1000 debated including both an LCD screen and speech recognition under their 12.50 Euro budget. What did they decide about both features in meeting d, and how did they compensate for cutting the LCD screen?",
+        "expected_answer": "Although Team IS1000 considered both features in meeting c and early meeting d, they cut both the LCD screen and speech recognition to stay within the 12.50 Euro budget. To compensate for dropping the LCD screen, they added two extra buttons.",
+        "predicted_answer": "The team decided to cut the LCD screen because it was too expensive at sixteen Euros, but they kept speech recognition and reverted to a simpler version on budget at twelve Euros. They compensated for cutting the LCD screen by adding a protective cover to the device.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "IS1000b",
+            "quote": "If we're getting into universal remote territory, we're getting to L_C_D_ screens and things like that which would drive the cost up a lot.",
+            "turn_id": "IS1000b#00325"
+          },
+          {
+            "meeting_id": "IS1000d",
+            "quote": "this gives a protection to the L_C_D_ actually, giving a cover to that actually.",
+            "turn_id": "IS1000d#00120"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "IS1000b",
+          "IS1000d"
+        ],
+        "gold_turn_ids": [
+          "IS1000c#00136",
+          "IS1000d#00683",
+          "IS1000d#00716",
+          "IS1000d#00719",
+          "IS1000d#00722"
+        ],
+        "gold_retrieval_recall": 0.8,
+        "gold_citation_recall": 0.0,
+        "fact_check": {
+          "matched": 3,
+          "total": 4,
+          "recall": 0.75,
+          "missing": [
+            "two|couple of buttons|extra buttons|more buttons"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_8e43d2c0ec9c",
+          "question_id": "C05",
+          "team": "IS1000",
+          "calls": 4,
+          "providers": [
+            "groq",
+            "gemini"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b",
+            "gemini-flash-lite-latest"
+          ],
+          "last_provider": "gemini",
+          "last_model": "gemini-flash-lite-latest",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 17086,
+            "completion_tokens": 519,
+            "thoughts_tokens": 0,
+            "total_tokens": 17605,
+            "billed_output_tokens": 519
+          },
+          "elapsed_sec": 6.45
+        }
+      },
+      {
+        "question_id": "C06",
+        "team": "IS1001",
+        "category": "CD+NUM",
+        "question": "Which fruit shape did Team IS1001 choose for their remote in meeting c, what practical advantage did Speaker A note for that choice, and what final production cost did Speaker A report in meeting d?",
+        "expected_answer": "Team IS1001 chose a yellow banana shape in meeting c, with Speaker A noting that because a banana is yellow it helps prevent losing the remote. In meeting d, Speaker A reported a final cost of 10.7 Euros, safely below the 12.50 Euro limit.",
+        "predicted_answer": "Team IS1001 chose a banana shape for their remote in meeting c, with Speaker A noting that its yellow color makes it easy to find so users cannot lose it. In meeting d, Speaker A reported the final production cost ended up being ten point seven Euros.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "IS1001c",
+            "quote": "Banana is also yellow so you you can't lost your remote control then.",
+            "turn_id": "IS1001c#00178"
+          },
+          {
+            "meeting_id": "IS1001d",
+            "quote": "And the cost ended to be ten point seven Euros.",
+            "turn_id": "IS1001d#00015"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "IS1001c",
+          "IS1001d"
+        ],
+        "gold_turn_ids": [
+          "IS1001c#00177",
+          "IS1001c#00178",
+          "IS1001d#00013",
+          "IS1001d#00015"
+        ],
+        "gold_retrieval_recall": 1.0,
+        "gold_citation_recall": 0.5,
+        "fact_check": {
+          "matched": 3,
+          "total": 3,
+          "recall": 1.0,
+          "missing": []
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_e12b530463ca",
+          "question_id": "C06",
+          "team": "IS1001",
+          "calls": 3,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 13684,
+            "completion_tokens": 379,
+            "thoughts_tokens": 0,
+            "total_tokens": 14063,
+            "billed_output_tokens": 379
+          },
+          "elapsed_sec": 124.02
+        }
+      },
+      {
+        "question_id": "C07",
+        "team": "IS1004",
+        "category": "CD+RSN",
+        "question": "During Team IS1004's final costing in meeting d, what happened to the sample speaker and the rubber casing that had been considered, and why was each removed or changed?",
+        "expected_answer": "Speaker A removed the sample speaker because Speaker B clarified they were only using a simple beep locator rather than voice recording. When the costing still came out over budget, Speakers B and C switched the case material from rubber to plastic so the cost would fit the budget and leave margin for the base station.",
+        "predicted_answer": "In the final costing meeting, the sample speaker was dropped because its cost was too high, and the rubber casing was replaced with plastic to reduce expenses.",
+        "ok": true,
+        "errors": [],
+        "warnings": [
+          "single_meeting"
+        ],
+        "citations": [
+          {
+            "meeting_id": "IS1004d",
+            "quote": "And we have sample speaker. Yeah. Yeah. the cost of that is very high.",
+            "turn_id": "IS1004d#00376"
+          },
+          {
+            "meeting_id": "IS1004d",
+            "quote": "Well no didn't we say we wanted to do a rubber",
+            "turn_id": "IS1004d#00409"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "IS1004d"
+        ],
+        "gold_turn_ids": [
+          "IS1004c#00220",
+          "IS1004d#00378",
+          "IS1004d#00383",
+          "IS1004d#00448",
+          "IS1004d#00449"
+        ],
+        "gold_retrieval_recall": 0.8,
+        "gold_citation_recall": 0.0,
+        "fact_check": {
+          "matched": 2,
+          "total": 3,
+          "recall": 0.6667,
+          "missing": [
+            "beep"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_427f1a29844d",
+          "question_id": "C07",
+          "team": "IS1004",
+          "calls": 2,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "openai/gpt-oss-20b"
+          ],
+          "last_provider": "groq",
+          "last_model": "openai/gpt-oss-20b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 6504,
+            "completion_tokens": 254,
+            "thoughts_tokens": 39,
+            "total_tokens": 6758,
+            "billed_output_tokens": 254
+          },
+          "elapsed_sec": 65.79
+        }
+      },
+      {
+        "question_id": "C08",
+        "team": "IS1005",
+        "category": "SPK+RSN",
+        "question": "In Team IS1005, which signal transmission technology did Speaker B recommend instead of radio frequency in meeting b and why, and what power combination did Speaker B say was required in meeting c to support both an LCD and speech recognition?",
+        "expected_answer": "In meeting b, Speaker B recommended sticking with infrared rather than radio frequency because infrared was much cheaper (radio frequency being 3 to 5 times more expensive) while offering fair range. In meeting c, Speaker B said combining common AA batteries with an additional solar cell was required to power both an LCD screen and speech recognition.",
+        "predicted_answer": "",
+        "ok": false,
+        "errors": [
+          "llm_error:AllProvidersFailed"
+        ],
+        "warnings": [],
+        "citations": [],
+        "verified_citations": 0,
+        "total_citations": 0,
+        "meetings_cited": [],
+        "gold_turn_ids": [
+          "IS1005b#00080",
+          "IS1005b#00082",
+          "IS1005c#00102",
+          "IS1005c#00105"
+        ],
+        "gold_retrieval_recall": 0.0,
+        "gold_citation_recall": 0.0,
+        "fact_check": {
+          "matched": 0,
+          "total": 4,
+          "recall": 0.0,
+          "missing": [
+            "infra|ir|i_r_",
+            "cheap|price|cost",
+            "batter",
+            "solar"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "calls": 0,
+          "last_model": null
+        }
+      },
+      {
+        "question_id": "C09",
+        "team": "IS1006",
+        "category": "CD+SPK",
+        "question": "In meeting c of Team IS1006, what case material and interface did Speaker C propose and why, and how did the prototype presented in meeting d differ with respect to the display?",
+        "expected_answer": "In meeting c, Speaker C proposed a titanium case (instead of rubber, which was expensive and hard to mold) and simple push buttons instead of an LCD to save money for speech recognition. In meeting d, however, the prototype still used a titanium case but actually included a non-touch LCD screen navigated with two directional buttons and a jog dial/wheel.",
+        "predicted_answer": "In meeting c, Speaker C proposed a titanium case and an interface combining push buttons with speech recognition to reduce costs and free up budget for the speech technology. In meeting d, the prototype differed by including an LCD display (specifically with a backlight) alongside the push buttons and a scroll wheel, whereas the earlier discussion had considered dropping the LCD in favor of buttons and speech.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "IS1006c",
+            "quote": "We'll use mainly for titanium rubber is expensive and also it's bit difficult to do all the shapes",
+            "turn_id": "IS1006c#00036"
+          },
+          {
+            "meeting_id": "IS1006c",
+            "quote": "we want to reduce price on this technology and so that we can have enough space or enough money for",
+            "turn_id": "IS1006c#00036"
+          },
+          {
+            "meeting_id": "IS1006d",
+            "quote": "One scroll wheel. One L_C_D_ displayed.",
+            "turn_id": "IS1006d#00410"
+          }
+        ],
+        "verified_citations": 3,
+        "total_citations": 3,
+        "meetings_cited": [
+          "IS1006c",
+          "IS1006d"
+        ],
+        "gold_turn_ids": [
+          "IS1006c#00016",
+          "IS1006c#00021",
+          "IS1006c#00036",
+          "IS1006d#00057",
+          "IS1006d#00233"
+        ],
+        "gold_retrieval_recall": 0.4,
+        "gold_citation_recall": 0.2,
+        "fact_check": {
+          "matched": 4,
+          "total": 4,
+          "recall": 1.0,
+          "missing": []
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_eb7376710c85",
+          "question_id": "C09",
+          "team": "IS1006",
+          "calls": 3,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 13200,
+            "completion_tokens": 444,
+            "thoughts_tokens": 0,
+            "total_tokens": 13644,
+            "billed_output_tokens": 444
+          },
+          "elapsed_sec": 123.92
+        }
+      },
+      {
+        "question_id": "C10",
+        "team": "TS3005",
+        "category": "CD+NUM",
+        "question": "Team TS3005's prototype costing in meeting d initially reached 18.50 Euros against the 12.50 Euro limit. Which major electronic feature did they drop, and what interface change did Speaker C propose to bring the total down to 11.50 Euros?",
+        "expected_answer": "After planning an LCD touch screen and speech recognition in meeting c, Team TS3005 dropped the sample speaker/sensor (speech recognition, worth 4 points) during meeting d's costing. Speaker C then proposed dropping the scroll wheel and relying solely on the touch screen, lowering the total to 11.50 Euros.",
+        "predicted_answer": "To bring the total cost down, they dropped the sample speaker and Speaker C proposed replacing the wood finish with a normal special colour.",
+        "ok": true,
+        "errors": [],
+        "warnings": [
+          "single_meeting"
+        ],
+        "citations": [
+          {
+            "meeting_id": "TS3005d",
+            "quote": "Yeah, but it's only a half. But I think the only option is to drop the uh sample speaker.",
+            "turn_id": "TS3005d#00627"
+          },
+          {
+            "meeting_id": "TS3005d",
+            "quote": "Yeah, but a wood we can make it brown, dark brown, not wood.",
+            "turn_id": "TS3005d#00640"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "TS3005d"
+        ],
+        "gold_turn_ids": [
+          "TS3005c#00034",
+          "TS3005d#00554",
+          "TS3005d#00627",
+          "TS3005d#00629",
+          "TS3005d#00654",
+          "TS3005d#00661"
+        ],
+        "gold_retrieval_recall": 0.3333,
+        "gold_citation_recall": 0.1667,
+        "fact_check": {
+          "matched": 1,
+          "total": 4,
+          "recall": 0.25,
+          "missing": [
+            "scroll",
+            "touch screen|touchscreen|lcd|l_c_d_",
+            "11.5|eleven point five|11.50"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_f1db1ceb3397",
+          "question_id": "C10",
+          "team": "TS3005",
+          "calls": 4,
+          "providers": [
+            "gemini"
+          ],
+          "models": [
+            "gemini-flash-lite-latest"
+          ],
+          "last_provider": "gemini",
+          "last_model": "gemini-flash-lite-latest",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 15978,
+            "completion_tokens": 336,
+            "thoughts_tokens": 0,
+            "total_tokens": 16314,
+            "billed_output_tokens": 336
+          },
+          "elapsed_sec": 71.09
+        }
+      },
+      {
+        "question_id": "C11",
+        "team": "TS3008",
+        "category": "SPK+RSN",
+        "question": "Why did Team TS3008 argue against an LCD display in meeting c, and what unresolved budget problem did Speaker A identify regarding the docking station during meeting d's costing?",
+        "expected_answer": "In meeting c, Speaker A and Speaker D rejected an LCD display as fragile and mismatched with their sturdy, throwable rubber-and-plastic design (and Speaker D noted TVs would need to send data back). In meeting d, Speaker A pointed out that the docking station was missing from the cost sheet and could not be built for the remaining 30 cents.",
+        "predicted_answer": "In meeting c, the team argued against an LCD display because it contradicted their philosophy of simplicity and the design was already considered 'overdone' or 'too much' with the existing docking station. In meeting d, Speaker A identified that the docking station was missing from the cost list and that it would be impossible to manufacture one for the previously assumed thirty cents.",
+        "ok": true,
+        "errors": [],
+        "warnings": [],
+        "citations": [
+          {
+            "meeting_id": "TS3008c",
+            "quote": "I don't think I j uh, and really, I don't see how the the L_C_D_ display is gonna add anything, you know, on a design level.",
+            "turn_id": "TS3008c#00271"
+          },
+          {
+            "meeting_id": "TS3008d",
+            "quote": "the problem now is that the There's no such thing as a docking station in this list, but we can all imagine that it would be impossible to make a docking station for thirty cents.",
+            "turn_id": "TS3008d#00511"
+          }
+        ],
+        "verified_citations": 2,
+        "total_citations": 2,
+        "meetings_cited": [
+          "TS3008c",
+          "TS3008d"
+        ],
+        "gold_turn_ids": [
+          "TS3008c#00214",
+          "TS3008c#00215",
+          "TS3008d#00405",
+          "TS3008d#00511"
+        ],
+        "gold_retrieval_recall": 0.25,
+        "gold_citation_recall": 0.25,
+        "fact_check": {
+          "matched": 2,
+          "total": 3,
+          "recall": 0.6667,
+          "missing": [
+            "fragile|vulnerable|break|sturdy"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "run_id": "run_f61fe6d49cd6",
+          "question_id": "C11",
+          "team": "TS3008",
+          "calls": 3,
+          "providers": [
+            "groq"
+          ],
+          "models": [
+            "qwen/qwen3.8-27b"
+          ],
+          "last_provider": "groq",
+          "last_model": "qwen/qwen3.8-27b",
+          "fallback_used": true,
+          "usage": {
+            "prompt_tokens": 14083,
+            "completion_tokens": 396,
+            "thoughts_tokens": 0,
+            "total_tokens": 14479,
+            "billed_output_tokens": 396
+          },
+          "elapsed_sec": 131.48
+        }
+      },
+      {
+        "question_id": "C12",
+        "team": "TS3012",
+        "category": "CD+NUM",
+        "question": "Team TS3012 considered including an LCD screen, speech recognition, and a yellow rubber case in meeting c. In meeting d, what initial total production cost did Speaker A calculate, and which two items did Speaker A cut to hit the 12.50 Euro limit while keeping the rubber case?",
+        "expected_answer": "In meeting d, Speaker A (Project Manager) calculated an initial production cost of 17 Euros for the design discussed in meeting c. To reach the 12.50 Euro limit while keeping the spongy rubber case and LCD, Speaker A cut speech recognition (bringing it to 13 Euros) and the special colour (delivering a black/grey base with optional separate covers).",
+        "predicted_answer": "",
+        "ok": false,
+        "errors": [
+          "llm_error:AllProvidersFailed"
+        ],
+        "warnings": [],
+        "citations": [],
+        "verified_citations": 0,
+        "total_citations": 0,
+        "meetings_cited": [],
+        "gold_turn_ids": [
+          "TS3012c#00168",
+          "TS3012c#00177",
+          "TS3012d#00032",
+          "TS3012d#00043",
+          "TS3012d#00080"
+        ],
+        "gold_retrieval_recall": 0.0,
+        "gold_citation_recall": 0.0,
+        "fact_check": {
+          "matched": 0,
+          "total": 4,
+          "recall": 0.0,
+          "missing": [
+            "17|seventeen",
+            "speech",
+            "special colour|special color|colour|color",
+            "12.5|twelve and a half|12.50|twelve point five"
+          ]
+        },
+        "manual_rubric_score": null,
+        "provenance": {
+          "calls": 0,
+          "last_model": null
+        }
+      }
+    ]
+  },
+  "no_team_retrieval_test": {
+    "eval_mode_guard_verified": true,
+    "target_sources": [
+      "user_manual_ground_truth"
+    ],
+    "summary": {
+      "k=8": {
+        "n_questions": 12,
+        "mean_recall_team_filtered": 0.1667,
+        "mean_recall_no_team": 0.0208,
+        "mean_recall_gap": 0.1459,
+        "mean_cross_team_contamination": 0.9479
+      },
+      "k=16": {
+        "n_questions": 12,
+        "mean_recall_team_filtered": 0.3167,
+        "mean_recall_no_team": 0.0958,
+        "mean_recall_gap": 0.2209,
+        "mean_cross_team_contamination": 0.9062
+      }
+    },
+    "details": [
+      {
+        "question_id": "C01",
+        "team": "ES2005",
+        "k": 8,
+        "gold_count": 5,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.2,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.2,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.158
+      },
+      {
+        "question_id": "C02",
+        "team": "ES2012",
+        "k": 8,
+        "gold_count": 3,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.3333,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.3333,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.134
+      },
+      {
+        "question_id": "C03",
+        "team": "ES2013",
+        "k": 8,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.25,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.14
+      },
+      {
+        "question_id": "C04",
+        "team": "ES2015",
+        "k": 8,
+        "gold_count": 6,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.1667,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.1667,
+        "cross_team_hit_rate": 0.75,
+        "elapsed_sec": 0.146
+      },
+      {
+        "question_id": "C05",
+        "team": "IS1000",
+        "k": 8,
+        "gold_count": 5,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.135
+      },
+      {
+        "question_id": "C06",
+        "team": "IS1001",
+        "k": 8,
+        "gold_count": 4,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.167
+      },
+      {
+        "question_id": "C07",
+        "team": "IS1004",
+        "k": 8,
+        "gold_count": 5,
+        "team_filtered_hits": 2,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.4,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.4,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.123
+      },
+      {
+        "question_id": "C08",
+        "team": "IS1005",
+        "k": 8,
+        "gold_count": 4,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.122
+      },
+      {
+        "question_id": "C09",
+        "team": "IS1006",
+        "k": 8,
+        "gold_count": 5,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.875,
+        "elapsed_sec": 0.144
+      },
+      {
+        "question_id": "C10",
+        "team": "TS3005",
+        "k": 8,
+        "gold_count": 6,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.222
+      },
+      {
+        "question_id": "C11",
+        "team": "TS3008",
+        "k": 8,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 1,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.25,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.75,
+        "elapsed_sec": 0.182
+      },
+      {
+        "question_id": "C12",
+        "team": "TS3012",
+        "k": 8,
+        "gold_count": 5,
+        "team_filtered_hits": 2,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.4,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.4,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.165
+      },
+      {
+        "question_id": "C01",
+        "team": "ES2005",
+        "k": 16,
+        "gold_count": 5,
+        "team_filtered_hits": 2,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.4,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.4,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.147
+      },
+      {
+        "question_id": "C02",
+        "team": "ES2012",
+        "k": 16,
+        "gold_count": 3,
+        "team_filtered_hits": 1,
+        "no_team_hits": 1,
+        "recall_team_filtered": 0.3333,
+        "recall_no_team": 0.3333,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.875,
+        "elapsed_sec": 0.173
+      },
+      {
+        "question_id": "C03",
+        "team": "ES2013",
+        "k": 16,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.25,
+        "cross_team_hit_rate": 0.875,
+        "elapsed_sec": 0.177
+      },
+      {
+        "question_id": "C04",
+        "team": "ES2015",
+        "k": 16,
+        "gold_count": 6,
+        "team_filtered_hits": 3,
+        "no_team_hits": 1,
+        "recall_team_filtered": 0.5,
+        "recall_no_team": 0.1667,
+        "recall_gap": 0.3333,
+        "cross_team_hit_rate": 0.8125,
+        "elapsed_sec": 0.185
+      },
+      {
+        "question_id": "C05",
+        "team": "IS1000",
+        "k": 16,
+        "gold_count": 5,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.2,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.2,
+        "cross_team_hit_rate": 0.875,
+        "elapsed_sec": 0.161
+      },
+      {
+        "question_id": "C06",
+        "team": "IS1001",
+        "k": 16,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.25,
+        "cross_team_hit_rate": 1.0,
+        "elapsed_sec": 0.176
+      },
+      {
+        "question_id": "C07",
+        "team": "IS1004",
+        "k": 16,
+        "gold_count": 5,
+        "team_filtered_hits": 4,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.8,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.8,
+        "cross_team_hit_rate": 0.9375,
+        "elapsed_sec": 0.142
+      },
+      {
+        "question_id": "C08",
+        "team": "IS1005",
+        "k": 16,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.25,
+        "cross_team_hit_rate": 0.9375,
+        "elapsed_sec": 0.233
+      },
+      {
+        "question_id": "C09",
+        "team": "IS1006",
+        "k": 16,
+        "gold_count": 5,
+        "team_filtered_hits": 0,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.0,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.9375,
+        "elapsed_sec": 0.17
+      },
+      {
+        "question_id": "C10",
+        "team": "TS3005",
+        "k": 16,
+        "gold_count": 6,
+        "team_filtered_hits": 1,
+        "no_team_hits": 0,
+        "recall_team_filtered": 0.1667,
+        "recall_no_team": 0.0,
+        "recall_gap": 0.1667,
+        "cross_team_hit_rate": 0.9375,
+        "elapsed_sec": 0.187
+      },
+      {
+        "question_id": "C11",
+        "team": "TS3008",
+        "k": 16,
+        "gold_count": 4,
+        "team_filtered_hits": 1,
+        "no_team_hits": 1,
+        "recall_team_filtered": 0.25,
+        "recall_no_team": 0.25,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.8125,
+        "elapsed_sec": 0.155
+      },
+      {
+        "question_id": "C12",
+        "team": "TS3012",
+        "k": 16,
+        "gold_count": 5,
+        "team_filtered_hits": 2,
+        "no_team_hits": 2,
+        "recall_team_filtered": 0.4,
+        "recall_no_team": 0.4,
+        "recall_gap": 0.0,
+        "cross_team_hit_rate": 0.875,
+        "elapsed_sec": 0.191
+      }
+    ]
+  },
+  "cost_time_estimate": {
+    "generated_at": "2026-11-23T15:03:35.159301+00:00",
+    "measured_baselines": {
+      "corpus": {
+        "meetings": 138,
+        "teams": 35,
+        "turns": 48148,
+        "citable_ge6": 23821,
+        "citable_per_meeting": 172.62,
+        "status": "VERIFIED"
+      },
+      "embeddings_full_run": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "centres_embedded": 23757,
+        "total_collection": 23821,
+        "elapsed_sec": 10149.7,
+        "centres_per_sec": 2.34,
+        "status": "VERIFIED (work/embed.out.log)"
+      },
+      "ts3012_ledger_4_meetings": {
+        "meetings": 4,
+        "windows": 20,
+        "prompt_tokens": 72413,
+        "completion_tokens": 15489,
+        "thoughts_tokens": 204,
+        "billed_output_tokens": 15693,
+        "elapsed_sec": 183.8,
+        "tokens_per_meeting": 22026.5,
+        "sec_per_meeting": 45.95,
+        "status": "VERIFIED (work/metrics/ledger.json); TS3012 has 5.0 windows/mtg vs 3.01 corpus avg (conservative upper bound)"
+      },
+      "ts3012_reconcile_2_scopes": {
+        "scopes": 2,
+        "calls": 8,
+        "prompt_tokens": 23265,
+        "completion_tokens": 5866,
+        "thoughts_tokens": 7357,
+        "billed_output_tokens": 13223,
+        "thoughts_share_of_billed_output": 0.5564,
+        "elapsed_sec": 145.13,
+        "status": "VERIFIED (work/metrics/reconcile.json, gemini-2.5-flash)"
+      },
+      "agent_per_question": {
+        "gemini-2.5-flash": {
+          "n": 3,
+          "avg_calls": 2.33,
+          "avg_prompt_tokens": 7316.0,
+          "avg_completion_tokens": 288.7,
+          "avg_thoughts_tokens": 1078.7,
+          "avg_billed_output_tokens": 1361.0,
+          "status": "VERIFIED (measured)"
+        },
+        "gemini-3.5-flash-lite": {
+          "n": 2,
+          "avg_calls": 4.0,
+          "avg_prompt_tokens": 15825.0,
+          "avg_completion_tokens": 389.0,
+          "avg_thoughts_tokens": 51.5,
+          "avg_billed_output_tokens": 389.0,
+          "status": "VERIFIED (measured)"
+        },
+        "openai/gpt-oss-120b": {
+          "n": 6,
+          "avg_calls": 3.0,
+          "avg_prompt_tokens": 10714.2,
+          "avg_completion_tokens": 1514.5,
+          "avg_thoughts_tokens": 1258.2,
+          "avg_billed_output_tokens": 1514.5,
+          "status": "VERIFIED (measured)"
+        },
+        "openai/gpt-oss-20b": {
+          "n": 11,
+          "avg_calls": 4.0,
+          "avg_prompt_tokens": 13621.6,
+          "avg_completion_tokens": 626.6,
+          "avg_thoughts_tokens": 321.5,
+          "avg_billed_output_tokens": 626.6,
+          "status": "VERIFIED (measured)"
+        },
+        "qwen/qwen3.8-27b": {
+          "n": 3,
+          "avg_calls": 3.0,
+          "avg_prompt_tokens": 11744.7,
+          "avg_completion_tokens": 375.3,
+          "avg_thoughts_tokens": 0.0,
+          "avg_billed_output_tokens": 375.3,
+          "status": "VERIFIED (measured)"
+        },
+        "all_passed": {
+          "n": 25,
+          "avg_calls": 3.44,
+          "avg_prompt_tokens": 12118.2,
+          "avg_completion_tokens": 750.0,
+          "avg_thoughts_tokens": 577.0,
+          "avg_billed_output_tokens": 878.7,
+          "status": "VERIFIED (measured)"
+        }
+      }
+    },
+    "pricing": {
+      "gemini-3.8-flash_through_2026": {
+        "input_per_1m_usd": 0.75,
+        "output_per_1m_usd": 3.75,
+        "status": "VERIFIED",
+        "source": "PHASE2_DESIGN.md §1.2 (official Google pricing page, Nov 2026; valid through 2026-12-31)",
+        "thoughts_billed_as_output": true
+      },
+      "gemini-3.8-flash_from_2027": {
+        "input_per_1m_usd": 1.5,
+        "output_per_1m_usd": 7.5,
+        "status": "VERIFIED",
+        "source": "PHASE2_DESIGN.md §1.2 (official Google pricing page, Nov 2026; effective 2027-01-01)",
+        "thoughts_billed_as_output": true
+      },
+      "gemini-2.5-flash_paid": {
+        "input_per_1m_usd": 0.3,
+        "output_per_1m_usd": 2.5,
+        "status": "NOT VERIFIED (ASSUMPTION)",
+        "source": "Approximate reference price; verify on Google AI Studio pricing page before budgeting",
+        "thoughts_billed_as_output": true
+      },
+      "groq_gpt_oss_120b_paid": {
+        "input_per_1m_usd": 0.15,
+        "output_per_1m_usd": 0.75,
+        "status": "NOT VERIFIED (ASSUMPTION)",
+        "source": "PHASE2_DESIGN.md §1.4 assumption",
+        "thoughts_billed_as_output": true
+      },
+      "groq_gpt_oss_20b_paid": {
+        "input_per_1m_usd": 0.1,
+        "output_per_1m_usd": 0.5,
+        "status": "NOT VERIFIED (ASSUMPTION)",
+        "source": "PHASE2_DESIGN.md §1.4 assumption",
+        "thoughts_billed_as_output": true
+      }
+    },
+    "free_tier_limits": {
+      "gemini-2.5-flash": {
+        "rpm": 5,
+        "rpd": 20,
+        "rpm_rpd_status": "VERIFIED (measured from live HTTP 429 responses)",
+        "tpm_tpd_status": "NOT VERIFIED (unpublished in official docs; AI Studio only)"
+      },
+      "gemini-3.8-flash": {
+        "rpm": 5,
+        "rpd": 20,
+        "rpm_rpd_status": "VERIFIED (measured from live HTTP 429 response, limit: 20)",
+        "availability_note": "Frequent 503 UNAVAILABLE / ReadTimeout during testing"
+      },
+      "groq_gpt_oss_120b": {
+        "rpm": 30,
+        "rpd": 1000,
+        "tpm": 8000,
+        "tpd": 200000,
+        "status": "VERIFIED (official Groq docs + live response headers)"
+      },
+      "groq_gpt_oss_20b": {
+        "rpm": 30,
+        "rpd": 1000,
+        "tpm": 8000,
+        "tpd": 200000,
+        "status": "VERIFIED (official Groq docs + live response headers)"
+      }
+    },
+    "scales": {
+      "138_meetings": {
+        "meetings": 138,
+        "est_teams": 35,
+        "est_turns": 48148,
+        "est_citable_centres": 23821,
+        "raw_vectors_mb": 34.9,
+        "extrapolation_status": "VERIFIED corpus counts; ledger/reconcile extrapolated from 4-meeting TS3012 run",
+        "embeddings_cpu": {
+          "centres_per_sec": 2.34,
+          "hours": 2.83,
+          "days": 0.12,
+          "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+        },
+        "ledger_plus_reconcile": {
+          "ledger_prompt_tokens": 2498248,
+          "ledger_billed_output_tokens": 541408,
+          "reconcile_prompt_tokens": 407138,
+          "reconcile_billed_output_tokens": 231402,
+          "reconcile_thoughts_tokens_included": 128748,
+          "total_prompt_tokens": 2905386,
+          "total_billed_output_tokens": 772810,
+          "serial_llm_hours_at_measured_pace": 2.47,
+          "estimated_cost_usd": {
+            "gemini_3.8_flash_2026_VERIFIED_price": 5.0771,
+            "gemini_3.8_flash_2027_VERIFIED_price": 10.1542,
+            "gemini_2.5_flash_ASSUMPTION_price": 2.8036,
+            "groq_gpt_oss_120b_ASSUMPTION_price": 1.0154
+          }
+        }
+      },
+      "1000_meetings": {
+        "meetings": 1000,
+        "est_teams": 254,
+        "est_turns": 348899,
+        "est_citable_centres": 172616,
+        "raw_vectors_mb": 252.9,
+        "extrapolation_status": "LINEAR EXTRAPOLATION (NOT VERIFIED at scale)",
+        "embeddings_cpu": {
+          "centres_per_sec": 2.34,
+          "hours": 20.49,
+          "days": 0.85,
+          "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+        },
+        "ledger_plus_reconcile": {
+          "ledger_prompt_tokens": 18103250,
+          "ledger_billed_output_tokens": 3923250,
+          "reconcile_prompt_tokens": 2954655,
+          "reconcile_billed_output_tokens": 1679321,
+          "reconcile_thoughts_tokens_included": 934339,
+          "total_prompt_tokens": 21057905,
+          "total_billed_output_tokens": 5602571,
+          "serial_llm_hours_at_measured_pace": 17.88,
+          "estimated_cost_usd": {
+            "gemini_3.8_flash_2026_VERIFIED_price": 36.8031,
+            "gemini_3.8_flash_2027_VERIFIED_price": 73.6061,
+            "gemini_2.5_flash_ASSUMPTION_price": 20.3238,
+            "groq_gpt_oss_120b_ASSUMPTION_price": 7.3606
+          }
+        }
+      },
+      "10000_meetings": {
+        "meetings": 10000,
+        "est_teams": 2536,
+        "est_turns": 3488986,
+        "est_citable_centres": 1726159,
+        "raw_vectors_mb": 2528.6,
+        "extrapolation_status": "LINEAR EXTRAPOLATION (NOT VERIFIED at scale)",
+        "embeddings_cpu": {
+          "centres_per_sec": 2.34,
+          "hours": 204.91,
+          "days": 8.54,
+          "status": "VERIFIED at 138 (2.82 h); linear extrapolation above"
+        },
+        "ledger_plus_reconcile": {
+          "ledger_prompt_tokens": 181032500,
+          "ledger_billed_output_tokens": 39232500,
+          "reconcile_prompt_tokens": 29500020,
+          "reconcile_billed_output_tokens": 16766764,
+          "reconcile_thoughts_tokens_included": 9328676,
+          "total_prompt_tokens": 210532520,
+          "total_billed_output_tokens": 55999264,
+          "serial_llm_hours_at_measured_pace": 178.76,
+          "estimated_cost_usd": {
+            "gemini_3.8_flash_2026_VERIFIED_price": 367.8966,
+            "gemini_3.8_flash_2027_VERIFIED_price": 735.7933,
+            "gemini_2.5_flash_ASSUMPTION_price": 203.1579,
+            "groq_gpt_oss_120b_ASSUMPTION_price": 73.5793
+          }
+        }
+      }
+    }
+  }
+}

@@ -21,6 +21,8 @@ def decision_status(
 ) -> str:
     scope = _scope(ctx)
     as_of = _as_of(ctx)
+    if meeting_letter > as_of:
+        return "out_of_scope"
 
     edge = conn.execute(
         "SELECT 1 FROM decision_supersedes "
@@ -30,13 +32,20 @@ def decision_status(
     if edge:
         return "superseded"
 
+    mapped = conn.execute(
+        "SELECT topic_key FROM topic_key_map "
+        "WHERE team = ? AND scope = ? AND decision_id = ? LIMIT 1",
+        (team, scope, decision_id),
+    ).fetchone()
+    effective_key = mapped["topic_key"] if mapped else topic_key
+
     peers = conn.execute(
         "SELECT d.decision_id, d.meeting_letter "
         "FROM decisions d "
         "JOIN topic_key_map m ON m.decision_id = d.decision_id "
         "AND m.team = d.team AND m.scope = ? "
         "WHERE d.team = ? AND d.meeting_letter <= ? AND m.topic_key = ?",
-        (scope, team, as_of, topic_key),
+        (scope, team, as_of, effective_key),
     ).fetchall()
     if not peers:
         return "unknown"

@@ -209,4 +209,8 @@ All checks were run with Python 3.13 on the real files:
 
 ## 14. Where this is saved
 
-`D:\Claude_projects\internship_test\PHASE1_DATASET_PROFILE.md` (summary updated in `plan.md`)
+`PHASE1_DATASET_PROFILE.md` (in the project root).
+
+## 15. Final implementation reconciliation
+
+All corpus counts verified in Phase 1 (`138` transcripts, `35` teams, `48,148` speaker turns, `23,821` citable turns `>=6` words, `0` digits in spoken transcript bodies, `TS3012` meetings `a–d`) match the final production SQLite (`work/catalyst.db`) and Chroma (`work/chroma`) indices with `0` character-offset mismatches across all `48,148` turns. The final build and verification suite ran on Python `3.12.2` in the project workspace; the exploratory one-off Phase 1 analysis scripts listed in §13 were superseded by the production package (`catalyst/parse.py`, `catalyst/store.py`, `catalyst/embed.py`, and `tests/`).

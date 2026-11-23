@@ -119,10 +119,40 @@ def records_for_scope(
 
 def _decision_lines(records: list[dict]) -> str:
     return "\n".join(
-        f'{record["id"]} | {record["meeting_letter"]} | {record["text"]}'
+        f'{record["id"]} | {record["meeting_letter"]} | {record.get("topic") or ""} | {record["text"]}'
         for record in records
         if record["kind"] == "decision"
     )
+
+
+def _later_evidence_lines(
+    decisions: list[dict], figures: list[dict], min_letter: str, max_chars: int = 8000
+) -> str:
+    lines: list[str] = []
+    used = 0
+    for record in decisions:
+        if record["meeting_letter"] <= min_letter:
+            continue
+        line = (
+            f'DEC {record["id"]} | {record["meeting_letter"]} | '
+            f'{record["text"]} | "{record["quote"]}"'
+        )
+        if used + len(line) > max_chars:
+            break
+        lines.append(line)
+        used += len(line) + 1
+    for record in figures:
+        if record["meeting_letter"] <= min_letter:
+            continue
+        line = (
+            f'FIG {record["id"]} | {record["meeting_letter"]} | '
+            f'{record.get("topic") or ""}: {record["text"]} | "{record["quote"]}"'
+        )
+        if used + len(line) > max_chars:
+            break
+        lines.append(line)
+        used += len(line) + 1
+    return "\n".join(lines)
 
 
 def _action_lines(records: list[dict]) -> str:
@@ -542,25 +572,42 @@ def _supersede_prompt(team: str, scope: str, text: str) -> str:
     )
 
 
-def _action_prompt(team: str, scope: str, text: str) -> str:
+def _action_prompt(
+    team: str, scope: str, text: str, later_evidence: str = ""
+) -> str:
+    evidence_block = (
+        f"\n\nLater-meeting decisions/figures (copy exact quotes from here when closing an action):\n{later_evidence}"
+        if later_evidence
+        else ""
+    )
     return (
         f"Team: {team}\n{_boundary(scope)}\n"
         "All actions are listed. Create action closures only when a later "
-        "record explicitly says the action was done; the quote must come from "
-        "a later meeting. Do not infer from silence. Use only the IDs shown. "
-        "Return JSON with key action_closures.\n\nActions:\n"
-        f"{text}"
+        "meeting record explicitly shows the action was completed or its "
+        "results were reported; the quote must be copied verbatim (>=6 words) "
+        "from a later meeting than the action. Do not infer from silence. "
+        "Use only the action IDs shown. Return JSON with key action_closures."
+        f"\n\nActions:\n{text}{evidence_block}"
     )
 
 
-def _disagreement_prompt(team: str, scope: str, text: str) -> str:
+def _disagreement_prompt(
+    team: str, scope: str, text: str, later_evidence: str = ""
+) -> str:
+    evidence_block = (
+        f"\n\nLater-meeting decisions/figures (copy exact quotes from here when resolving a disagreement):\n{later_evidence}"
+        if later_evidence
+        else ""
+    )
     return (
         f"Team: {team}\n{_boundary(scope)}\n"
         "All disagreements are listed. Create disagreement resolutions only "
-        "when a later record explicitly resolves it; the quote must come from "
-        "a later meeting. Do not infer from silence. Use only the IDs shown. "
-        "Return JSON with key disagreement_resolutions.\n\nDisagreements:\n"
-        f"{text}"
+        "when a later meeting record explicitly resolves the disagreement "
+        "(e.g. a later decision settling that exact topic); the quote must be "
+        "copied verbatim (>=6 words) from a later meeting than the "
+        "disagreement. Do not infer from silence. Use only the disagreement "
+        "IDs shown. Return JSON with key disagreement_resolutions."
+        f"\n\nDisagreements:\n{text}{evidence_block}"
     )
 
 
@@ -622,6 +669,10 @@ def run(
                 for record in records
                 if record["kind"] == "disagreement"
             ]
+            ctx_scope = tools.RunContext(
+                team=team, as_of=scope_as_of(scope), mode="answer"
+            )
+            figures = tools.ledger(conn, ctx_scope, kind="figures")
             combined = {
                 "topics": [],
                 "supersedes": [],
@@ -646,16 +697,24 @@ def run(
                     )
                 )
             if actions:
+                min_act_letter = min(r["meeting_letter"] for r in actions)
+                later_for_act = _later_evidence_lines(
+                    decisions, figures, min_act_letter
+                )
                 calls.append(
                     (
                         ACTION_SCHEMA,
                         _action_prompt(
-                            team, scope, _action_lines(actions)
+                            team, scope, _action_lines(actions), later_for_act
                         ),
                         ["action_closures"],
                     )
                 )
             if disagreements:
+                min_dis_letter = min(r["meeting_letter"] for r in disagreements)
+                later_for_dis = _later_evidence_lines(
+                    decisions, figures, min_dis_letter
+                )
                 calls.append(
                     (
                         DISAGREEMENT_SCHEMA,
@@ -663,6 +722,7 @@ def run(
                             team,
                             scope,
                             _disagreement_lines(disagreements),
+                            later_for_dis,
                         ),
                         ["disagreement_resolutions"],
                     )
