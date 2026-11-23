@@ -15,11 +15,18 @@ METRICS_PATH = config.METRICS_DIR / "ledger.json"
 
 SYSTEM_PROMPT = (
     "You extract structured meeting memory from AMI design-meeting transcripts. "
-    "Return JSON only. Extract only explicit evidence. Do not infer. "
-    "Every record must include an exact quote of at least 6 words copied from one "
-    "speaker turn in the provided window, plus that turn's turn_id. Never paraphrase. "
-    "If there is no explicit evidence, return empty arrays."
+    "Return JSON only and use exactly the four top-level arrays in the schema. "
+    "Extract only information explicitly stated in the supplied transcript window; "
+    "never invent, infer, complete missing fields, or use outside knowledge. "
+    "Every record must point to one speaker turn in this window and include "
+    "that turn's exact turn_id and an exact quote copied verbatim from that same turn. "
+    "Quotes must contain at least 6 words. Do not combine words from different turns. "
+    "If a category has no qualifying evidence, return an empty array for that category. "
+    "Do not create an action from a status update, suggestion, question, or meeting-time "
+    "announcement unless someone explicitly undertakes a concrete task. "
+    "Do not assign an owner unless the transcript explicitly identifies the person."
 )
+
 
 LEDGER_SCHEMA = {
     "type": "object",
@@ -29,8 +36,8 @@ LEDGER_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "topic": {"type": "string"},
-                    "decision": {"type": "string"},
+                    "topic": {"type": "string", "description": "Short subject explicitly discussed in the cited turn."},
+                    "decision": {"type": "string", "description": "Agreed choice or decision, not an unaccepted proposal."},
                     "turn_id": {"type": "string"},
                     "quote": {"type": "string"},
                 },
@@ -42,8 +49,8 @@ LEDGER_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "owner": {"type": "string"},
-                    "task": {"type": "string"},
+                    "owner": {"type": "string", "description": "Explicitly identified responsible person; omit if not explicit."},
+                    "task": {"type": "string", "description": "Concrete task someone explicitly commits or is assigned to do."},
                     "turn_id": {"type": "string"},
                     "quote": {"type": "string"},
                 },
@@ -57,7 +64,7 @@ LEDGER_SCHEMA = {
                 "properties": {
                     "topic": {"type": "string"},
                     "who": {"type": "string"},
-                    "position": {"type": "string"},
+                    "position": {"type": "string", "description": "Conflicting position explicitly expressed in the cited turn."},
                     "turn_id": {"type": "string"},
                     "quote": {"type": "string"},
                 },
@@ -69,9 +76,9 @@ LEDGER_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "value": {"type": "string"},
-                    "unit": {"type": "string"},
-                    "component": {"type": "string"},
+                    "value": {"type": "string", "description": "Numeric value explicitly stated in the cited turn, represented as text."},
+                    "unit": {"type": "string", "description": "Unit explicitly stated, such as Euro or minutes."},
+                    "component": {"type": "string", "description": "What the number refers to, such as selling price or target revenue."},
                     "role": {
                         "type": "string",
                         "enum": [
@@ -397,7 +404,7 @@ def store_window(
             (
                 action_id,
                 team,
-                _speaker(raw.get("owner") or speaker),
+                _speaker(raw.get("owner")),
                 task,
                 meeting_id,
                 letter,
@@ -536,14 +543,51 @@ def store_window(
 def _user_prompt(meeting: dict, window_text: str) -> str:
     return (
         f"Meeting: {meeting['meeting_id']} (team {meeting['team']}, "
-        f"meeting {meeting['letter']}).\n"
-        "Extract decisions, actions, disagreements, and figures. "
-        "Return JSON with keys decisions, actions, disagreements, figures. "
-        "Each record needs turn_id and an exact quote of at least 6 words "
-        "copied from the displayed window. Use only the displayed text.\n\n"
-        "Window:\n"
+        f"meeting {meeting['letter']}).\\n"
+        "Extract only evidence present in the window. Return exactly these four "
+        "top-level arrays: decisions, actions, disagreements, figures.\\n\\n"
+        "CATEGORY RULES:\\n"
+        "1. decisions: include an agreed choice or explicit decision, not merely an idea. "
+        "Provide topic and a concise decision description.\\n"
+        "2. actions: include a concrete task someone explicitly agrees or is assigned "
+        "to do. Provide task. Provide owner only when the person is explicitly identified; "
+        "otherwise omit owner. Do not treat meeting scheduling, general discussion, "
+        "or suggestions as actions.\\n"
+        "3. disagreements: include clearly conflicting positions. Provide topic and "
+        "the position expressed in this turn. Do not invent the other side.\\n"
+        "4. figures: extract each materially distinct numeric amount/quantity explicitly "
+        "mentioned. Provide value as a string, role from total/limit/unit_price/conversion, "
+        "and unit/component when stated. Use total for a target or overall amount, "
+        "limit for a cap/maximum, unit_price for a per-item selling price, and conversion "
+        "for an explicitly stated conversion or equivalent. Do not calculate or derive "
+        "numbers that are not spoken. Preserve approximate/uncertain wording in the "
+        "component if needed; do not present an estimate as exact.\\n\\n"
+        "CITATION RULES:\\n"
+        "Every record must include turn_id and an exact quote of at least 6 words "
+        "copied verbatim from one single speaker turn displayed below. The quote and "
+        "turn_id must refer to the same turn. Never paraphrase the quote, combine turns, "
+        "or invent a turn_id. If evidence is insufficient, omit that record.\\n\\n"
+        "Return each record as a JSON object matching the schema exactly. "
+        "For a spoken price such as twenty five Euro, extract the numeric value "
+        "and unit only when the amount is explicitly spoken; identify the component "
+        "and role from the surrounding words, without calculating new values.\\n\\n"
+        "Window:\\n"
         f"{window_text}"
     )
+
+
+def _valid_extraction_payload(data: object) -> tuple[bool, str | None]:
+    """Validate the model's outer JSON shape before a window is checkpointed."""
+    if not isinstance(data, dict):
+        return False, "response_not_object"
+    required = ("decisions", "actions", "disagreements", "figures")
+    for key in required:
+        value = data.get(key)
+        if not isinstance(value, list):
+            return False, f"{key}_not_array"
+        if any(not isinstance(item, dict) for item in value):
+            return False, f"{key}_contains_non_object"
+    return True, None
 
 
 def _load_progress() -> set[str]:
@@ -646,16 +690,19 @@ def run(
                 break
 
             data = llm.parse_json_text(result.text)
-            if not isinstance(data, dict):
+            payload_ok, payload_error = _valid_extraction_payload(data)
+            if not payload_ok:
+                reason = f"invalid_extraction_payload:{payload_error}"
                 _drop(
                     conn,
                     meeting["team"],
                     meeting["meeting_id"],
                     "window",
-                    "parse_error",
+                    reason,
                     {"text": result.text[:1000]},
                     _now_iso(),
                 )
+                conn.commit()
                 counts = {
                     "decisions": 0,
                     "actions": 0,
@@ -663,13 +710,43 @@ def run(
                     "figures": 0,
                     "drops": 1,
                 }
-            else:
-                counts = store_window(
-                    conn, meeting, window, data, result
+                # Do NOT checkpoint malformed model output as completed.
+                # The next invocation will retry this window.
+                summary["errors"].append(
+                    f'{meeting["meeting_id"]} window {window["index"]}: {reason}'
                 )
-            conn.commit()
-            done.add(key)
-            _save_progress(done)
+            else:
+                try:
+                    counts = store_window(
+                        conn, meeting, window, data, result
+                    )
+                    conn.commit()
+                    done.add(key)
+                    _save_progress(done)
+                except Exception as exc:
+                    conn.rollback()
+                    reason = f"store_window_error:{type(exc).__name__}:{exc}"
+                    _drop(
+                        conn,
+                        meeting["team"],
+                        meeting["meeting_id"],
+                        "window",
+                        reason[:500],
+                        {"text": result.text[:1000]},
+                        _now_iso(),
+                    )
+                    conn.commit()
+                    counts = {
+                        "decisions": 0,
+                        "actions": 0,
+                        "disagreements": 0,
+                        "figures": 0,
+                        "drops": 1,
+                    }
+                    # Keep the window pending so it can be retried.
+                    summary["errors"].append(
+                        f'{meeting["meeting_id"]} window {window["index"]}: {reason}'
+                    )
             summary["windows"] += 1
             for field in (
                 "decisions",
@@ -694,7 +771,8 @@ def run(
                 f'fallback={result.fallback_used} '
                 f'dec={counts["decisions"]} act={counts["actions"]} '
                 f'dis={counts["disagreements"]} fig={counts["figures"]} '
-                f'drop={counts["drops"]}',
+                f'drop={counts["drops"]} '
+                f'checkpointed={key in done}',
                 flush=True,
             )
 
